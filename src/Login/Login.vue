@@ -119,12 +119,13 @@ export default {
                 });
                 this.token = result.data.data.token
                 isAdmin = result.data.data.isAdmin
-                // 将token存入sessionStorage中
-                sessionStorage.setItem('token', this.token);
+                // 根据是否是管理员，将token设置为不同的名称存入sessionStorage中
                 // 如果是管理员则跳转到管理系统，如果是用户则跳转到用户界面
                 if (isAdmin) {
+                  sessionStorage.setItem('adminToken', this.token);
                   this.$router.push("/adminpage")
                 } else {
+                  sessionStorage.setItem('userToken', this.token);
                   this.$router.push("/userpage")
                 };
               }

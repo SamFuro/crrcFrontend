@@ -77,8 +77,16 @@
                         <el-table-column prop="name" label="姓名" align="center"></el-table-column>
                         <el-table-column prop="phone" label="电话" align="center"></el-table-column>
                         <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
-                        <el-table-column prop="createTime" label="创建时间" align="center"></el-table-column>
-                        <el-table-column prop="deleteTime" label="删除时间" align="center"></el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.createTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="deleteTime" label="删除时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.deleteTime) }}
+                            </template>
+                        </el-table-column>
                         <el-table-column prop="status" label="状态" :formatter="formatUserStatus" align="center"></el-table-column>
                         <!-- 操作按钮 编辑&删除 -->
                         <el-table-column label="操作">
@@ -203,7 +211,7 @@
             <!-- 镜像管理主页面 -->
             <el-main v-if="mainValue == 4">
                 <!-- 查询功能 -->
-                <el-form :inline="true" :model="imageSearchForm" align="center">
+                <el-form :inline="true" :model="imageSearchForm" align="center" ref="imageSearchForm" :rules="imageRules">
                     <el-form-item label="镜像名称" style="margin-left: 30px;">
                         <el-input v-model="imageSearchForm.searchImageName" placeholder="请输入内容"></el-input>
                     </el-form-item>
@@ -217,11 +225,10 @@
                         <el-button type="primary" @click="searchImage">查询</el-button>
                         <el-button type="danger" @click="cancelSearchImage">取消</el-button>
                     </el-form-item>
-                    <!-- 创建镜像 -->
+                    <!-- 创建镜像和删除镜像 -->
                     <el-form-item style="margin-left: 20px;">
                         <el-button type="primary" @click="createImage">上传</el-button>
                         <el-button type="danger" @click="deleteImage">删除</el-button>
-                        <el-button type="primary" @click="pushImage">推送</el-button>
                     </el-form-item>
                 </el-form>
                 <!-- 内容表格 -->
@@ -231,14 +238,21 @@
                     <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
                     <el-table-column prop="tags" label="标签" align="center"></el-table-column>
                     <el-table-column prop="pullCount" label="pullCount" align="center"></el-table-column>
-                    <el-table-column prop="creationTime" label="创建时间" align="center"></el-table-column>
-                    <el-table-column prop="updateTime" label="更新时间" align="center"></el-table-column>
+                    <el-table-column prop="creationTime" label="创建时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.creationTime) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="updateTime" label="更新时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.updateTime) }}
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="projectName" label="项目名称" align="center"></el-table-column>
-                    <el-table-column prop="reference" label="标识符" align="center"></el-table-column>
                     <!-- 操作按钮 创建容器实例 -->
                     <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button size="mini" @click="createContainer">创建容器实例</el-button>
+                            <el-button size="mini" type="danger" @click="createContainer">创建容器实例</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
@@ -439,18 +453,27 @@ export default{
                 memory: "",
             },
 
+            // 用户信息table rules
             userRules: {
                 searchStatus: [{ required: false, trigger:"change"}],
                 searchCompanyName: [{ required: false, trigger:"change"}],
             },
+            // 租户信息table rules
             companyRules: {
                 searchCompanyName: [{ required: false, trigger:"change"}],
             },
+            // log信息table rules
             logRules: {
                 searchCompanyName: [{ required: false, trigger:"change"}],
                 searchUsername: [{ required: false, trigger:"change"}],
                 searchContainerName: [{ required: false, trigger:"change"}],
             },
+            // 镜像信息table rules
+            imageRules:{
+                searchImageName: [{ required: false, trigger:"change"}],
+                searchCompanyId: [{ required: false, trigger:"change"}],
+                searchStatus: [{ required: false, trigger:"change"}],
+            }
         }
     },
     methods:{
@@ -468,7 +491,7 @@ export default{
                         url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                             'content-Type' : "application/json",
-                            "Authorization": `${sessionStorage.getItem('token')}`
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
                         },
                         data: {
                             "status": this.userSearchForm.searchStatus,
@@ -488,7 +511,7 @@ export default{
                         url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                             'content-Type' : "application/json",
-                            "Authorization": `${sessionStorage.getItem('token')}`
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
                         },
                         data: {
                             "status": this.userSearchForm.searchStatus,
@@ -515,7 +538,7 @@ export default{
                 url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "status": "",
@@ -537,7 +560,7 @@ export default{
                 url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "name": this.companySearchForm.searchCompanyName,
@@ -559,7 +582,7 @@ export default{
                 url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "status": "",
@@ -580,13 +603,12 @@ export default{
                 url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
-                    // "name": this.imageSearchForm.searchImageName,
-                    "name": "registry",
-                    "companyId": this.imageSearchForm.searchCompanyId,
-                    "status": this.imageSearchForm.searchStatus,
+                    "name": this.imageSearchForm.searchImageName,
+                    // "companyId": this.imageSearchForm.searchCompanyId,
+                    // "status": this.imageSearchForm.searchStatus,
                 }
             }).then((result) => {
                 console.log(result)
@@ -607,7 +629,7 @@ export default{
                 url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "name": "",
@@ -636,7 +658,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -660,7 +682,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     // "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -699,7 +721,7 @@ export default{
             //     url: 'api/main/update',
             //     headers: {
             //         'content-Type' : "application/json",
-            //         "Authorization": `${sessionStorage.getItem('token')}`
+            //         "Authorization": `${sessionStorage.getItem('adminToken')}`
             //     },
             //     data: {
             //         "username": this.editUserDataForm.username,
@@ -745,46 +767,87 @@ export default{
         // 删除镜像
         deleteImage:function(){
             console.log(this.selectedImageList)
+            // 调用delete接口删除
             axios({
                 method: 'post',
                 url: 'api/image/delete',
                 headers: {
-                    'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
-                data: {
-                    "projectName": "test",
-                    "imageName": "registry",
-                    "tag": "v1.0.0",
-                    "reference": "sha256:99c45bc4a5d529994c0c1b5511d07e9c62378d6eee8ca5f41e0bba6b7b5ff161"
-                }
+                data: this.selectedImageList, 
             }).then((result) => {
-                console.log(result)
+                console.log(result);
+                this.$message.success("删除成功！");
+                // 删除后，显示所有镜像信息
+                this.currentPage = 1;
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "name": "",
+                    }
+                }).then((result) => {
+                    this.imageData = result.data.data.records
+                    this.totalImageData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
             }).catch(error => {
                 this.handleError(error)
             });
         },
 
-        // 推送镜像
-        pushImage:function(){
-            axios({
-                method: 'post',
-                url: 'api/image/push',
-                headers: {
-                    'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
-                },
-                data: {
-                    "projectName": "test",
-                    "imageName": "harbordb",
-                    "tag": "2.10.2"
-                }
-            }).then((result) => {
-                console.log(result)
-            }).catch(error => {
-                this.handleError(error)
-            });
-        },
+        // // 推送镜像
+        // pushImage:function(index, row){
+        //     // 获取当前行的三个参数
+        //     const projectName = row.projectName;
+        //     const imageName = row.name;
+        //     const tag = row.tags;
+        //     // 调用image/push接口推送镜像
+        //     axios({
+        //         method: 'post',
+        //         url: 'api/image/push',
+        //         headers: {
+        //             'content-Type' : "application/json",
+        //             "Authorization": `${sessionStorage.getItem('adminToken')}`
+        //         },
+        //         data: {
+        //             "projectName": projectName,
+        //             "imageName": imageName,
+        //             "tag": tag,
+        //         }
+        //     }).then((result) => {
+        //         console.log(result)
+        //         this.$message.success("镜像推送成功！")
+        //         // 推送后，获得所有镜像信息
+        //         this.currentPage = 1;
+        //         axios({
+        //             method: 'post',
+        //             url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+        //             headers: {
+        //                 'content-Type' : "application/json",
+        //                 "Authorization": `${sessionStorage.getItem('adminToken')}`
+        //             },
+        //             data: {
+        //                 "name": "",
+        //                 "companyId": "",
+        //                 "status": "",
+        //             }
+        //         }).then((result) => {
+        //             console.log(result)
+        //             this.imageData = result.data.data.records
+        //             this.totalImageData = result.data.data.total // 获取总条数
+        //         }).catch(error => {
+        //             this.handleError(error)
+        //         });
+        //     }).catch(error => {
+        //         this.handleError(error)
+        //     });
+        // },
 
         // 获取用户审批中的选中项
         userVerifySelectionChange(val) {
@@ -799,7 +862,7 @@ export default{
                 projectName: row.projectName,
                 imageName: row.name,
                 tag: row.tags,
-                reference: row.reference
+                reference: row.reference,
             }));
         },
 
@@ -820,7 +883,7 @@ export default{
                 url: 'api/main/list',
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "status": 0,
@@ -843,7 +906,7 @@ export default{
                 url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "status": "",
@@ -866,7 +929,7 @@ export default{
                 url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "status": "",
@@ -889,10 +952,12 @@ export default{
                 url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     "name": "",
+                    "companyId": "",
+                    "status": "",
                 }
             }).then((result) => {
                 console.log(result)
@@ -917,7 +982,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
                     // "companyName": "",
@@ -945,7 +1010,7 @@ export default{
                     url: 'api/company/create',
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "name": this.createCompanyData.name,
@@ -985,7 +1050,7 @@ export default{
                     method: 'post',
                     url: 'api/main/review?opt=1',
                     headers: {
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: this.selectedUserList,
                 }).then((result) => {
@@ -999,7 +1064,7 @@ export default{
                     url: 'api/main/list',
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "status": 0,
@@ -1026,7 +1091,7 @@ export default{
                     method: 'post',
                     url: 'api/main/review?opt=0',
                     headers: {
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: this.selectedUserList,
                 }).then((result) => {
@@ -1040,7 +1105,7 @@ export default{
                     url: 'api/main/list',
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "status": 0,
@@ -1067,7 +1132,7 @@ export default{
                             url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                             headers: {
                                 'content-Type' : "application/json",
-                                "Authorization": `${sessionStorage.getItem('token')}`
+                                "Authorization": `${sessionStorage.getItem('adminToken')}`
                             },
                             data: {
                                 "status": this.userSearchForm.searchStatus,
@@ -1087,7 +1152,7 @@ export default{
                             url: 'api/main/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                             headers: {
                                 'content-Type' : "application/json",
-                                "Authorization": `${sessionStorage.getItem('token')}`
+                                "Authorization": `${sessionStorage.getItem('adminToken')}`
                             },
                             data: {
                                 "status": this.userSearchForm.searchStatus,
@@ -1109,7 +1174,7 @@ export default{
                     url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "name": this.companySearchForm.searchCompanyName,
@@ -1129,7 +1194,7 @@ export default{
                     url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "name": "",
@@ -1149,7 +1214,7 @@ export default{
                     url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
                         "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -1182,6 +1247,14 @@ export default{
                 default:
                     return '未知状态';  
             }
+        },
+
+        // 将时间中间的T换成空格
+        formatTime(timeStr) {
+            if (timeStr === null) {
+                return 'NULL'; 
+            }
+            return timeStr.replace('T', '\n');
         },
 
         // 错误处理

@@ -60,40 +60,53 @@
                         <el-form-item label="镜像名称" style="margin-left: 30px;">
                             <el-input v-model="imageSearchForm.searchImageName" placeholder="请输入内容"></el-input>
                         </el-form-item>
-                        <el-form-item label="创建人" style="margin-left: 30px;">
-                            <el-input v-model="imageSearchForm.searchCreatImageUser" placeholder="请输入内容"></el-input>
-                        </el-form-item>
                         <el-form-item>
                             <el-button type="primary" @click="searchImage">查询</el-button>
+                            <el-button type="danger" @click="cancelSearchImage">取消</el-button>
                         </el-form-item>
-                        <!-- 创建镜像 -->
-                        <el-form-item style="margin-left: 50px">
-                            <el-button type="primary" @click="createImage">上传镜像</el-button>
-                            <el-button type="danger">删除</el-button>
+                        <!-- 创建镜像和删除镜像 -->
+                        <el-form-item style="margin-left: 20px;">
+                            <el-button type="primary" @click="createImage">上传</el-button>
+                            <el-button type="danger" @click="deleteImage">删除</el-button>
                         </el-form-item>
                     </el-form>
-                    <!-- 内容表格 -->
-                    <el-table :data="imageManagementData" border @selection-change="imageSelectionChange" key="imageManagementData" ref="imageManagementData">
-                        <el-table-column prop="imageName" label="镜像名称"></el-table-column>
-                        <el-table-column prop="fileSize" label="文件大小"></el-table-column>
-                        <el-table-column prop="numInUsing" label="正在使用的数量"></el-table-column>
-                        <el-table-column prop="createTime" label="创建时间"></el-table-column>
-                        <el-table-column prop="createUser" label="创建用户"></el-table-column>
-                        <el-table-column prop="tanent" label="租户"></el-table-column>
+                     <!-- 内容表格 -->
+                    <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable" ref="imageData">
+                        <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
+                        <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
+                        <el-table-column prop="tags" label="标签" align="center"></el-table-column>
+                        <el-table-column prop="pullCount" label="pullCount" align="center"></el-table-column>
+                        <el-table-column prop="creationTime" label="创建时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.creationTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="updateTime" label="更新时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.updateTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="projectName" label="项目名称" align="center"></el-table-column>
                         <!-- 操作按钮 创建容器实例 -->
                         <el-table-column label="操作">
                             <template slot-scope="scope">
-                                <el-button size="mini" @click="createContainer">创建容器实例</el-button>
+                                <el-button size="mini" type="danger" @click="createContainer">创建容器实例</el-button>
+                                <el-button size="mini" type="danger" @click="pushImage(scope.$index, scope.row)" style="margin-top: 5px;">推送镜像</el-button>
                             </template>
                         </el-table-column>
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
                     </el-table>
                     <br>
+
                     <!-- 分页条 -->
                     <el-pagination
                         background
                         layout="prev, pager, next, jumper"
-                        :total="1000">
+                        :total="this.totalImageData"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-size="pageSize">
                     </el-pagination>
                 </el-main>
 
@@ -196,14 +209,14 @@ export default{
     data () {
         return {
             softwareLogData: [], // 软件运行态log数据
-            imageManagementData: [], // 镜像管理数据
+            imageData: [], // 镜像管理数据: [], // 镜像管理数据
             containerInstanceData: [], // 容器实例数据
             userLogData: [], // 用户日志数据
             selectedImageList: [], // 选中的镜像列表
             selectedContainerList: [], // 选中的容器实例列表
             totalLogData: 0, // 软件运行态log数据总条数
             pageSize: 7, // 每页显示的数据条数
-            mainValue: 1, // 控制主页面切换
+            mainValue: 0, // 控制主页面切换
             currentPage: 1, // 当前页面
             avatarPath: require("@/test/testAvatar.jpeg"),
 
@@ -220,7 +233,6 @@ export default{
             // 镜像信息搜索功能中的值
             imageSearchForm: {  
                 searchImageName: "",  // 镜像名称
-                searchCreatImageUser: "",  // 创建该镜像的用户
             },
 
             // 容器实例信息搜索功能中的值
@@ -257,6 +269,27 @@ export default{
         // 镜像信息页面
         changeMainTo3:function(){
             this.mainValue = 3;
+            this.currentPage = 1;
+            // 获得所有镜像信息
+            axios({
+                method: 'post',
+                url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
+                },
+                data: {
+                    "name": "",
+                    "companyId": "",
+                    "status": "",
+                }
+            }).then((result) => {
+                console.log(result)
+                this.imageData = result.data.data.records
+                this.totalImageData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
         },
         // 容器实例信息界面
         changeMainTo4:function(){
@@ -272,7 +305,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
                     // "companyName": "",
@@ -293,6 +326,54 @@ export default{
 
         },
 
+        // 推送镜像
+        pushImage:function(index, row){
+            // 获取当前行的三个参数
+            const projectName = row.projectName;
+            const imageName = row.name;
+            const tag = row.tags;
+            // 调用image/push接口推送镜像
+            axios({
+                method: 'post',
+                url: 'api/image/push',
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
+                },
+                data: {
+                    "projectName": projectName,
+                    "imageName": imageName,
+                    "tag": tag,
+                }
+            }).then((result) => {
+                console.log(result)
+                this.$message.success("镜像推送成功！")
+                // 推送后，获得所有镜像信息
+                this.currentPage = 1;
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('userToken')}`
+                    },
+                    data: {
+                        "name": "",
+                        "companyId": "",
+                        "status": "",
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.imageData = result.data.data.records
+                    this.totalImageData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
         // 创建容器实例
         createContainer:function(){
 
@@ -300,12 +381,100 @@ export default{
 
         // 查询镜像
         searchImage:function(){
+        this.currentPage = 1;   
+        axios({
+            method: 'post',
+            url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+            headers: {
+                'content-Type' : "application/json",
+                "Authorization": `${sessionStorage.getItem('userToken')}`
+            },
+            data: {
+                "name": this.imageSearchForm.searchImageName,
+                // "companyId": this.imageSearchForm.searchCompanyId,
+                // "status": this.imageSearchForm.searchStatus,
+            }
+        }).then((result) => {
+            console.log(result)
+            console.log(this.imageSearchForm)
+            this.imageData = result.data.data.records
+            this.totalImageData = result.data.data.total // 获取总条数
+        }).catch(error => {
+            this.handleError(error)
+        });
 
         },
         // 取消查询，显示所有镜像数据
         cancelSearchImage:function(){
+            this.currentPage = 1;
+            this.resetForm('imageSearchForm');
+            axios({
+                method: 'post',
+                url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
+                },
+                data: {
+                    "name": "",
+                }
+            }).then((result) => {
+                console.log(result)
+                this.imageData = result.data.data.records
+                this.totalImageData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
 
         },
+
+        // 删除镜像
+        deleteImage:function(){
+            console.log(this.selectedImageList)
+            // 调用delete接口删除
+            axios({
+                method: 'post',
+                url: 'api/image/delete',
+                headers: {
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
+                },
+                data: this.selectedImageList, 
+            }).then((result) => {
+                console.log(result);
+                this.$message.success("删除成功！");
+                // 删除后，显示所有镜像信息
+                this.currentPage = 1;
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('userToken')}`
+                    },
+                    data: {
+                        "name": "",
+                    }
+                }).then((result) => {
+                    this.imageData = result.data.data.records
+                    this.totalImageData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
+        // 获取镜像管理中的选中项
+        imageSelectionChange(val) {
+            this.selectedImageList = val.map(row => ({
+                projectName: row.projectName,
+                imageName: row.name,
+                tag: row.tags,
+                reference: row.reference,
+            }));
+        },
+
         //查询容器实例
         searchContainer:function(){
 
@@ -322,7 +491,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
                     "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -346,7 +515,7 @@ export default{
                 url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('token')}`
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
                     // "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -417,7 +586,7 @@ export default{
                     url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('token')}`
+                        "Authorization": `${sessionStorage.getItem('userToken')}`
                     },
                     data: {
                         "companyName": this.softwareLogSearchForm.searchCompanyName,
@@ -432,6 +601,14 @@ export default{
                     this.handleError(error)
                 });
             }
+        },
+
+        // 将时间中间的T换成空格
+        formatTime(timeStr) {
+            if (timeStr === null) {
+                return 'NULL'; 
+            }
+            return timeStr.replace('T', '\n');
         },
 
 
