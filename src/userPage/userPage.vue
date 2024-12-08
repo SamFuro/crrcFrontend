@@ -115,30 +115,23 @@
                 <el-main v-if="mainValue == 4">
                     <!-- 查询功能 -->
                     <el-form :inline="true" :model="containerSearchForm" align="center">
-                        <el-form-item label="实例名称" style="margin-left: 30px;">
-                            <el-input v-model="containerSearchForm.searchContainerName" placeholder="请输入内容"></el-input>
-                        </el-form-item>
-                        <el-form-item label="创建此实例的镜像名称" style="margin-left: 30px;">
-                            <el-input v-model="containerSearchForm.searchCreatImageName" placeholder="请输入内容"></el-input>
+                        <el-form-item label="命名空间" style="margin-left: 30px;">
+                            <el-input v-model="containerSearchForm.namespace" placeholder="请输入内容"></el-input>
                         </el-form-item>
                         <el-form-item>
                             <el-button type="primary" @click="searchContainer">查询</el-button>
                         </el-form-item>
                         <!-- 删除按钮 -->
                         <el-form-item style="margin-left: 50px">
-                            <el-button type="danger">删除</el-button>
+                            <el-button type="danger" @click="deleteContainer">删除</el-button>
                         </el-form-item>
                     </el-form>
                     <!-- 内容表格 -->
-                    <el-table :data="containerInstanceData" border @selection-change="containerSelectionChange" key="containerInstanceData" ref="containerInstanceData">
-                        <el-table-column prop="containerName" label="实例名称"></el-table-column>
-                        <el-table-column prop="startTime" label="启动时间"></el-table-column>
-                        <el-table-column prop="runningTime" label="运行时间"></el-table-column>
-                        <el-table-column prop="imageName" label="镜像名称"></el-table-column>
-                        <el-table-column prop="createUser" label="创建用户"></el-table-column>
-                        <el-table-column prop="tanent" label="租户"></el-table-column>
-                        <el-table-column prop="logUrl" label="日志url"></el-table-column>
-                        <el-table-column prop="softwareRunningUrl" label="软件运行url"></el-table-column>
+                    <el-table :data="containerData" border @selection-change="containerSelectionChange" key="containerData">
+                        <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                        <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
+                        <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
+                        <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
                     </el-table>
                     <br>
@@ -147,7 +140,10 @@
                     <el-pagination
                         background
                         layout="prev, pager, next, jumper"
-                        :total="1000">
+                        :total="this.totalContainerData"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-size="pageSize">
                     </el-pagination>
                 </el-main>
 
@@ -188,7 +184,7 @@
                 <el-pagination
                     background
                     layout="prev, pager, next, jumper"
-                    :total="this.totalLogData"
+                    :total="this.totalSoftwareLogData"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
                     :page-size="pageSize">
@@ -210,11 +206,13 @@ export default{
         return {
             softwareLogData: [], // 软件运行态log数据
             imageData: [], // 镜像管理数据: [], // 镜像管理数据
-            containerInstanceData: [], // 容器实例数据
+            containerData: [], // 容器实例数据
             userLogData: [], // 用户日志数据
             selectedImageList: [], // 选中的镜像列表
             selectedContainerList: [], // 选中的容器实例列表
-            totalLogData: 0, // 软件运行态log数据总条数
+            totalImageData: 0, // 镜像数据总条数
+            totalContainerData: 0, // 容器实例数据总条数
+            totalSoftwareLogData: 0, // 软件运行态log数据总条数
             pageSize: 7, // 每页显示的数据条数
             mainValue: 0, // 控制主页面切换
             currentPage: 1, // 当前页面
@@ -237,8 +235,7 @@ export default{
 
             // 容器实例信息搜索功能中的值
             containerSearchForm: {  
-                searchContainerName: "",  // 容器实例名称
-                searchCreatImageName: "",  // 创建该实例的镜像名称
+                namespace: "",
             },
 
             // 软件运行态log管理搜索功能中的值
@@ -294,6 +291,25 @@ export default{
         // 容器实例信息界面
         changeMainTo4:function(){
             this.mainValue = 4;
+            this.currentPage = 1;
+            // 获取所有容器实例信息
+            axios({
+                method: 'get',
+                url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('userToken')}`
+                },
+                // data: {
+
+                // }
+            }).then((result) => {
+                console.log(result)
+                this.containerData = result.data.data.records
+                this.totalContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
         },
         // 软件运行log信息页面
         changeMainTo5:function(){
@@ -315,7 +331,7 @@ export default{
             }).then((result) => {
                 console.log(result)
                 this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
+                this.totalSoftwareLogData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -484,6 +500,49 @@ export default{
 
         },
 
+        // 删除容器实例
+        deleteContainer:function(){
+            console.log(this.selectedContainerList)
+            if (this.selectedContainerList == '') {
+                this.$message("未选择任何容器实例！")
+            }
+            else {
+                axios({
+                    method: 'post',
+                    url: 'api/container/delete',
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('userToken')}`
+                    },
+                    data: this.selectedContainerList,
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("删除成功！")
+                    // 显示删除后的所有容器实例数据
+                    this.currentPage = 1;
+                    axios({
+                        method: 'get',
+                        url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('userToken')}`
+                        },
+                        // data: {
+
+                        // }
+                    }).then((result) => {
+                        console.log(result)
+                        this.containerData = result.data.data.records
+                        this.totalContainerData = result.data.data.total // 获取总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+        },
+
         // 查询软件运行态log
         searchSoftwareLog:function(){
             axios({
@@ -501,7 +560,7 @@ export default{
             }).then((result) => {
                 console.log(result)
                 this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
+                this.totalSoftwareLogData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -525,7 +584,7 @@ export default{
             }).then((result) => {
                 console.log(result)
                 this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
+                this.totalSoftwareLogData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -541,7 +600,8 @@ export default{
         // 获取容器实例管理中的选中项
         containerSelectionChange(val) {
             this.selectedContainerList = val.map(row => ({
-                
+                namespace: row.namespace,
+                name: row.containerName,
             }));
         },
 
@@ -579,8 +639,48 @@ export default{
         //点击按钮切换页面
         handleCurrentChange(currentPage) {
             this.currentPage = currentPage; //每次点击分页按钮，当前页发生变化
+            // 如果当前页面是镜像页面
+            if(this.mainValue == 3) {
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "name": this.imageSearchForm.searchImageName,
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.imageData = result.data.data.records
+                    this.totalImageData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+            // 如果当前页面是容器实例管理页面
+            if(this.mainValue == 4) {
+                axios({
+                    method: 'get',
+                    url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('userToken')}`
+                    },
+                    // data: {
+
+                    // }
+                }).then((result) => {
+                    console.log(result)
+                    this.containerData = result.data.data.records
+                    this.totalLogData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
             // 如果当前页面是软件log管理页面
-            if(this.mainValue == 6) {
+            if(this.mainValue == 5) {
                 axios({
                     method: 'post',
                     url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,

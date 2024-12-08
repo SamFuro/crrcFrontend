@@ -6,22 +6,22 @@
             <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
                 <el-menu :default-openeds="['1','2']">
                     <el-submenu index="1">
-                        <template slot="title"><i class="el-icon-message"></i>信息管理</template>
+                        <template slot="title"><i class="el-icon-thumb"></i>审批管理</template>
                         <el-menu-item-group>
                             <el-menu-item index="1-1" @click="changeMainTo1">用户审批</el-menu-item>
-                            <el-menu-item index="1-2" @click="changeMainTo2">用户管理</el-menu-item>
-                            <el-menu-item index="1-3" @click="changeMainTo3">租户管理</el-menu-item>
-                            <el-menu-item index="1-4" @click="changeMainTo4">镜像管理</el-menu-item>
-                            <el-menu-item index="1-5" @click="changeMainTo5">容器实例管理</el-menu-item>
-                            <el-menu-item index="1-6" @click="changeMainTo6">软件运行态log管理</el-menu-item>
+                            <el-menu-item index="1-2" @click="changeMainTo2">镜像审批</el-menu-item>
                         </el-menu-item-group>
                     </el-submenu>
-                    <!-- <el-submenu index="2">
-                        <template slot="title"><i class="el-icon-s-order"></i>管理</template>
+                    <el-submenu index="2">
+                        <template slot="title"><i class="el-icon-s-order"></i>信息管理</template>
                         <el-menu-item-group>
-                            
+                            <el-menu-item index="2-1" @click="changeMainTo3">用户管理</el-menu-item>
+                            <el-menu-item index="2-2" @click="changeMainTo4">租户管理</el-menu-item>
+                            <el-menu-item index="2-3" @click="changeMainTo5">镜像管理</el-menu-item>
+                            <el-menu-item index="2-4" @click="changeMainTo6">容器实例管理</el-menu-item>
+                            <el-menu-item index="2-5" @click="changeMainTo7">软件运行态log管理</el-menu-item>
                         </el-menu-item-group>
-                    </el-submenu> -->
+                    </el-submenu>
                 </el-menu>
             </el-aside>
             <!-- 用户审批主页面 -->
@@ -42,9 +42,28 @@
                     </el-row>
 
                 </el-main>
+
+            <!-- 镜像审批主页面 -->
+            <el-main v-if="mainValue == 2">
+                    <!-- 待审批用户表格内容 -->
+                    <!-- <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
+                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                        <el-table-column prop="name" label="姓名" align="center"></el-table-column>
+                        <el-table-column prop="phone" label="电话" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
+                        <el-table-column prop="status" label="状态" align="center" :formatter="formatUserStatus"></el-table-column>
+                        <el-table-column type="selection" align="center" width="55"></el-table-column>
+                    </el-table> -->
+                    <!-- 通过 & 不通过 按钮 -->
+                     <el-row style="margin-left: 1050px; margin-top: 20px">
+                        <el-button type="danger">不通过</el-button>
+                        <el-button type="primary" style="margin-left: 15px;">通过</el-button>
+                    </el-row>
+
+                </el-main>
             
             <!-- 用户管理主页面 -->
-                <el-main v-if="mainValue == 2">
+                <el-main v-if="mainValue == 3">
                     <!-- 查询功能 -->
                     <el-form :inline="true" :model="userSearchForm" align="center" ref="userSearchForm" :rules="userRules">
                         <!-- <el-form-item label="姓名">
@@ -129,10 +148,10 @@
                 </el-main>
                 
             <!-- 租户管理主页面 -->
-                <el-main v-if="mainValue == 3">
+                <el-main v-if="mainValue == 4">
                     <!-- 查询功能 -->
                     <el-form :inline="true" :model="companySearchForm" align="center" ref="companySearchForm" :rules="companyRules">
-                        <el-form-item label="公司名称" prop="searchCompanyName" style="margin-left: 30px;">
+                        <el-form-item label="公司名称" style="margin-left: 30px;">
                             <el-input v-model="companySearchForm.searchCompanyName"></el-input>
                         </el-form-item>
                         <el-form-item>
@@ -209,7 +228,7 @@
                 </el-main>
 
             <!-- 镜像管理主页面 -->
-            <el-main v-if="mainValue == 4">
+            <el-main v-if="mainValue == 5">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="imageSearchForm" align="center" ref="imageSearchForm" :rules="imageRules">
                     <el-form-item label="镜像名称" style="margin-left: 30px;">
@@ -232,7 +251,7 @@
                     </el-form-item>
                 </el-form>
                 <!-- 内容表格 -->
-                <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable" ref="imageData">
+                <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable">
                     <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
                     <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
                     <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
@@ -252,7 +271,7 @@
                     <!-- 操作按钮 创建容器实例 -->
                     <el-table-column label="操作">
                         <template slot-scope="scope">
-                            <el-button size="mini" type="danger" @click="createContainer">创建容器实例</el-button>
+                            <el-button size="mini" type="danger" @click="createContainer(scope.$index, scope.row)">创建容器实例</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
@@ -271,40 +290,27 @@
             </el-main>
 
             <!-- 容器实例管理主页面 -->
-            <el-main v-if="mainValue == 5">
+            <el-main v-if="mainValue == 6">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="containerSearchForm" align="center">
-                    <el-form-item label="实例名称" style="margin-left: 30px;">
-                        <el-input v-model="containerSearchForm.searchContainerName" placeholder="请输入内容"></el-input>
-                    </el-form-item>
-                    <el-form-item label="创建此实例的镜像名称" style="margin-left: 30px;">
-                        <el-input v-model="containerSearchForm.searchCreatImageName" placeholder="请输入内容"></el-input>
+                    <el-form-item label="命名空间" style="margin-left: 30px;">
+                        <el-input v-model="containerSearchForm.namespace" placeholder="请输入内容"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="searchContainer">查询</el-button>
+                        <el-button type="danger" @click="cancelSearchContainer">取消</el-button>
                     </el-form-item>
                     <!-- 删除按钮 -->
                     <el-form-item style="margin-left: 50px">
-                        <el-button type="danger">删除</el-button>
+                        <el-button type="danger" @click="deleteContainer">删除</el-button>
                     </el-form-item>
                 </el-form>
                 <!-- 内容表格 -->
-                <el-table :data="containerInstanceData" border key="containerDataTable" @selection-change="containerSelectionChange" ref="containerInstanceData">
-                    <el-table-column prop="containerName" label="实例名称"></el-table-column>
-                    <el-table-column prop="startTime" label="启动时间"></el-table-column>
-                    <el-table-column prop="runningTime" label="运行时间"></el-table-column>
-                    <el-table-column prop="imageName" label="镜像名称"></el-table-column>
-                    <el-table-column prop="createUser" label="创建用户"></el-table-column>
-                    <el-table-column prop="tanent" label="租户"></el-table-column>
-                    <el-table-column prop="logUrl" label="日志url"></el-table-column>
-                    <el-table-column prop="softwareRunningUrl" label="软件运行url"></el-table-column>
-                    <!-- 操作按钮 编辑&删除 -->
-                    <!-- <el-table-column label="操作">
-                        <template slot-scope="scope">
-                            <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                            <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                        </template>
-                    </el-table-column> -->
+                <el-table :data="containerData" border key="containerDataTable" @selection-change="containerSelectionChange">
+                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                    <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
+                    <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
+                    <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
                 </el-table>
                 <br>
@@ -313,12 +319,15 @@
                 <el-pagination
                     background
                     layout="prev, pager, next, jumper"
-                    :total="1000">
+                    :total="this.totalContainerData"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize">
                 </el-pagination>
             </el-main>
 
             <!-- 软件运行态log管理主页面 -->
-            <el-main v-if="mainValue == 6">
+            <el-main v-if="mainValue == 7">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="softwareLogSearchForm" align="center" ref="softwareLogSearchForm" :rules="logRules">
                     <el-form-item label="公司名称" prop="searchCompanyName" style="margin-left: 30px;">
@@ -384,7 +393,7 @@ export default{
             userData: [],  // 用户数据
             companyData: [], // 租户数据
             imageData: [], // 镜像管理数据
-            containerInstanceData: [], // 容器实例数据
+            containerData: [], // 容器实例数据
             softwareLogData: [], // 软件运行态log数据
             verifyUserList: [], // 待审批用户列表
             selectedUserList: [], // 选中的用户列表
@@ -395,6 +404,7 @@ export default{
             pageSize: 7, // 每一页显示的数据量
             totalUserData: 0, // 用户数据总条数
             totalCompanyData: 0, // 租户数据总条数
+            totalContainerData: 0, // 容器实例数据总条数
             totalImageData: 0, // 镜像数据总条数
             totalLogData: 0, // 软件log数据总条数
             userDataChangeDiaVisible: false, // 修改用户信息表单显示与否
@@ -421,8 +431,7 @@ export default{
 
             // 容器实例管理搜索功能中的值
             containerSearchForm: {  
-                searchContainerName: "",  // 容器实例名称
-                searchCreatImageName: "",  // 创建该实例的镜像名称
+                namespace: "", // 命名空间
             },
 
             // 软件运行态log管理搜索功能中的值
@@ -651,6 +660,50 @@ export default{
         cancelSearchContainer:function(){
 
         },
+
+        // 删除容器实例
+        deleteContainer:function(){
+            console.log(this.selectedContainerList)
+            if (this.selectedContainerList == '') {
+                this.$message("未选择任何容器实例！")
+            }
+            else {
+                axios({
+                    method: 'post',
+                    url: 'api/container/delete',
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: this.selectedContainerList,
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("删除成功！")
+                    // 显示删除后的所有容器实例数据
+                    this.currentPage = 1;
+                    axios({
+                        method: 'get',
+                        url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        // data: {
+
+                        // }
+                    }).then((result) => {
+                        console.log(result)
+                        this.containerData = result.data.data.records
+                        this.totalContainerData = result.data.data.total // 获取总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+        },
+
         // 查询软件运行态log
         searchSoftwareLog:function(){
             axios({
@@ -869,7 +922,8 @@ export default{
         // 获取容器实例管理中的选中项
         containerSelectionChange(val) {
             this.selectedContainerList = val.map(row => ({
-                
+                namespace: row.namespace,
+                name: row.containerName,
             }));
         },
 
@@ -877,7 +931,7 @@ export default{
         changeMainTo1:function(){
             this.mainValue = 1;
             this.currentPage = 1;
-            // 获取待审批用户信息
+            // 获取所有待审批用户信息
             axios({
                 method: 'post',
                 url: 'api/main/list',
@@ -896,9 +950,16 @@ export default{
             });
         },
 
-        // 用户管理页面
+        // 镜像审批页面
         changeMainTo2:function(){
             this.mainValue = 2;
+            this.currentPage = 1;
+            // 获得所有待审批镜像信息
+        },
+
+        // 用户管理页面
+        changeMainTo3:function(){
+            this.mainValue = 3;
             this.currentPage = 1;
             // 获得所有用户信息
             axios({
@@ -919,9 +980,10 @@ export default{
                 this.handleError(error)
             });
         },
+
         // 租户管理页面
-        changeMainTo3:function(){
-            this.mainValue = 3;
+        changeMainTo4:function(){
+            this.mainValue = 4;
             this.currentPage = 1;
             // 获得所有租户信息
             axios({
@@ -942,9 +1004,10 @@ export default{
                 this.handleError(error)
             });
         },
+
         // 镜像管理页面
-        changeMainTo4:function(){
-            this.mainValue = 4;
+        changeMainTo5:function(){
+            this.mainValue = 5;
             this.currentPage = 1;
             // 获得所有镜像信息
             axios({
@@ -969,12 +1032,32 @@ export default{
         },
 
         // 容器实例管理页面
-        changeMainTo5:function(){
-            this.mainValue = 5;
-        },
-        // 软件运行态log页面
         changeMainTo6:function(){
-            this.mainValue = 6;
+            this.mainValue = 6
+            this.currentPage = 1
+            // 获取所有容器实例信息
+            axios({
+                method: 'get',
+                url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+                // data: {
+
+                // }
+            }).then((result) => {
+                console.log(result)
+                this.containerData = result.data.data.records
+                this.totalContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
+        // 软件运行态log页面
+        changeMainTo7:function(){
+            this.mainValue = 7;
             this.currentPage = 1;
             // 获得软件log信息
             axios({
@@ -1035,8 +1118,26 @@ export default{
         },
 
         // 创建容器实例
-        createContainer:function(){
-
+        createContainer:function(index, row){
+            const name = row.name
+            const tag = row.tags
+            const image = name + ":" + tag
+            // 调用接口创建容器实例
+            axios({
+                    method: 'post',
+                    url: 'api/container/create',
+                    headers: {
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "image": image,
+                    },
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("容器实例创建成功！")
+                }).catch(error => {
+                    this.handleError(error)
+                });
         },
 
         // 用户审批通过
@@ -1125,7 +1226,7 @@ export default{
         handleCurrentChange(currentPage) {
             this.currentPage = currentPage; //每次点击分页按钮，当前页发生变化
             // 如果当前页面是用户管理页面
-            if(this.mainValue == 2) {
+            if(this.mainValue == 3) {
                 if (this.userSearchForm.searchCompanyName == "") {
                     axios({
                             method: 'post',
@@ -1168,7 +1269,7 @@ export default{
                 }
             }
             // 如果当前页面是租户管理页面
-            if(this.mainValue == 3) {
+            if(this.mainValue == 4) {
                 axios({
                     method: 'post',
                     url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -1188,7 +1289,7 @@ export default{
                 });
             }
             // 如果当前页面是镜像页面
-            if(this.mainValue == 4) {
+            if(this.mainValue == 5) {
                 axios({
                     method: 'post',
                     url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -1197,7 +1298,9 @@ export default{
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
-                        "name": "",
+                        "name": this.imageSearchForm.searchImageName,
+                        "companyId": this.imageSearchForm.searchCompanyId,
+                        "status": this.imageSearchForm.searchStatus,
                     }
                 }).then((result) => {
                     console.log(result)
@@ -1207,8 +1310,30 @@ export default{
                     this.handleError(error)
                 });
             }
-            // 如果当前页面是软件log管理页面
+            // 如果当前页面是容器实例管理页面
             if(this.mainValue == 6) {
+                axios({
+                    method: 'get',
+                    url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    // data: {
+
+                    // }
+                }).then((result) => {
+                    console.log(result)
+                    this.containerData = result.data.data.records
+                    this.totalLogData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+
+
+            // 如果当前页面是软件log管理页面
+            if(this.mainValue == 7) {
                 axios({
                     method: 'post',
                     url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
