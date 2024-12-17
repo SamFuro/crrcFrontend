@@ -30,8 +30,41 @@
           </router-link>
           <el-button type="primary" @click="getUserData" style="margin-top: 20px;">获取用户信息</el-button>
           <el-button type="primary" @click="getUserData" style="margin-top: 20px;">跳转测试</el-button>
+          <el-button type="primary" @click="dialogFormVisible = true" style="margin-top: 20px;">打开上传文件的Dialog</el-button>
         </div>
       </el-card>
+
+      <el-dialog title="上传镜像" :visible.sync="dialogFormVisible">
+      <el-form :model="imageform">
+        <el-form-item label="tar包名称：">
+          <el-input v-model="imageform.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item>
+          
+          <!-- 上传文件测试 -->
+          <!-- <el-upload
+            action="http://localhost:8080/image/upload"
+            :headers="uploadHeaders"
+            :on-success="handleSuccess"
+            :limit="1"
+            :file-list="fileList">
+            <el-button type="primary">点击上传</el-button>
+          </el-upload> -->
+
+          <el-button icon="el-icon-document-copy" type="primary" @click="checkFile">上传镜像测试</el-button>
+                    <input id="fileInput" type="file" style="display: none;" @change="update($event)" />
+
+
+        </el-form-item>
+      </el-form>
+
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
+
     </div>
   </template>
   
@@ -47,6 +80,20 @@
           "phone": "15015015150",
           "companyId": 1,
         },
+
+        // 镜像
+        imageform:{
+          name: ""
+        },
+
+        // 文件上传headers
+        uploadHeaders: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+        
+
+        fileList: [], // 用于存储已上传的文件列表
+
         receiveData: {},
         UserDataTest: {},
         ruleForm: {
@@ -61,9 +108,51 @@
             { required: true, message: "密码不能为空！", trigger: "blur" },
           ],
         },
+
+        dialogFormVisible: false,
       };
     },
     methods: {
+      checkFile() {
+            document.querySelector('#fileInput').click()
+      },
+      
+
+      // 调用接口 上传文件
+      update(e) {
+          let file = e.target.files[0]
+          let formData = new FormData()
+          formData.append('file', file)
+          
+          axios({
+                  method: 'post',
+                  url: 'api/image/upload',
+                  headers: {
+                      "Authorization": `${sessionStorage.getItem('adminToken')}`,
+                      'content-Type' : "multipart/form-data",
+                  },
+                  data: formData
+              }).then((result) => {
+                  console.log(result)
+                  if (result.code) {
+                      this.$message({
+                          message: '上传失败！',
+                          type: 'error'
+                      });
+                      this.uploadHeaders
+                  }
+                  else {
+                      this.$message({
+                          message: '上传成功！',
+                          type: 'success'
+                      });
+                  }
+              }).catch(error => {
+                  this.handleError(error)
+              });
+      },
+
+
       handleError(error) {
           if (error.response) {
               // error.response包含了服务器响应的详细信息
@@ -123,6 +212,11 @@
           }).catch(error => {
               this.handleError(error)
           })
+      },
+
+      // 上传文件测试
+      uploadTar(){
+
       },
         
 

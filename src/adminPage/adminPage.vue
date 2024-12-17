@@ -27,12 +27,12 @@
             <!-- 用户审批主页面 -->
                 <el-main v-if="mainValue == 1">
                     <!-- 待审批用户表格内容 -->
-                    <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
+                    <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyUserTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
                         <el-table-column prop="username" label="用户名" align="center"></el-table-column>
                         <el-table-column prop="name" label="姓名" align="center"></el-table-column>
                         <el-table-column prop="phone" label="电话" align="center"></el-table-column>
                         <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
-                        <el-table-column prop="status" label="状态" align="center" :formatter="formatUserStatus"></el-table-column>
+                        <el-table-column prop="status" label="状态" align="center" :formatter="formatStatus"></el-table-column>
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
                     </el-table>
                     <!-- 通过 & 不通过 按钮 -->
@@ -46,18 +46,24 @@
             <!-- 镜像审批主页面 -->
             <el-main v-if="mainValue == 2">
                     <!-- 待审批用户表格内容 -->
-                    <!-- <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
-                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-                        <el-table-column prop="name" label="姓名" align="center"></el-table-column>
-                        <el-table-column prop="phone" label="电话" align="center"></el-table-column>
-                        <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
-                        <el-table-column prop="status" label="状态" align="center" :formatter="formatUserStatus"></el-table-column>
+                    <el-table :data="verifyImageList" border @selection-change="imageVerifySelectionChange" key="verifyImageTable" ref="verifyImageList" style="width: 1200px; margin-left: 30px">
+                        <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
+                        <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
+                        <el-table-column prop="tags" label="标签" align="center"></el-table-column>
+                        <el-table-column prop="creationTime" label="创建时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.creationTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="projectName" label="项目名称" align="center"></el-table-column>
+                        <el-table-column prop="status" label="状态" align="center">{{ "待审批" }}</el-table-column>
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
-                    </el-table> -->
+                    </el-table>
                     <!-- 通过 & 不通过 按钮 -->
                      <el-row style="margin-left: 1050px; margin-top: 20px">
-                        <el-button type="danger">不通过</el-button>
-                        <el-button type="primary" style="margin-left: 15px;">通过</el-button>
+                        <el-button type="danger" @click="rejectImage">不通过</el-button>
+                        <el-button type="primary" @click="approveImage" style="margin-left: 15px;">通过</el-button>
                     </el-row>
 
                 </el-main>
@@ -106,7 +112,7 @@
                                 {{ formatTime(scope.row.deleteTime) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="status" label="状态" :formatter="formatUserStatus" align="center"></el-table-column>
+                        <el-table-column prop="status" label="状态" :formatter="formatStatus" align="center"></el-table-column>
                         <!-- 操作按钮 编辑&删除 -->
                         <el-table-column label="操作">
                             <template slot-scope="scope">
@@ -238,7 +244,13 @@
                         <el-input v-model="imageSearchForm.searchCompanyId" placeholder="请输入内容"></el-input>
                     </el-form-item>
                     <el-form-item label="镜像状态" style="margin-left: 30px;">
-                        <el-input v-model="imageSearchForm.searchStatus" placeholder="请输入内容"></el-input>
+                            <el-select v-model="imageSearchForm.searchStatus" placeholder="状态">
+                                <el-option label="待审批" value="0"></el-option>
+                                <el-option label="审批通过" value="1"></el-option>
+                                <el-option label="审批不通过" value="2"></el-option>
+                                <el-option label="已删除" value="3"></el-option>
+                                <el-option label="异常" value="4"></el-option>
+                            </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="searchImage">查询</el-button>
@@ -246,7 +258,7 @@
                     </el-form-item>
                     <!-- 创建镜像和删除镜像 -->
                     <el-form-item style="margin-left: 20px;">
-                        <el-button type="primary" @click="createImage">上传</el-button>
+                        <!-- <el-button type="primary" @click="createImage">上传</el-button> -->
                         <el-button type="danger" @click="deleteImage">删除</el-button>
                     </el-form-item>
                 </el-form>
@@ -311,6 +323,11 @@
                     <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
                     <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
                     <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                    <el-table-column prop="createTime" label="创建时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.createTime) }}
+                        </template>
+                    </el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
                 </el-table>
                 <br>
@@ -396,17 +413,18 @@ export default{
             containerData: [], // 容器实例数据
             softwareLogData: [], // 软件运行态log数据
             verifyUserList: [], // 待审批用户列表
+            verifyImageList: [], // 待审批镜像列表
             selectedUserList: [], // 选中的用户列表
             selectedImageList: [], // 选中的镜像列表
             selectedContainerList: [], // 选中的容器实例列表
-            mainValue: 0, // 控制主页面切换
-            currentPage: 1, // 当前页 刷新后默认显示第一页
-            pageSize: 7, // 每一页显示的数据量
             totalUserData: 0, // 用户数据总条数
             totalCompanyData: 0, // 租户数据总条数
             totalContainerData: 0, // 容器实例数据总条数
             totalImageData: 0, // 镜像数据总条数
             totalLogData: 0, // 软件log数据总条数
+            mainValue: 0, // 控制主页面切换
+            currentPage: 1, // 当前页 刷新后默认显示第一页
+            pageSize: 7, // 每一页显示的数据量
             userDataChangeDiaVisible: false, // 修改用户信息表单显示与否
             createCompanyDiaVisible: false, // 创建租户信息表单显示与否
             companyDataChangeDiaVisible: false, // 修改租户信息表单显示与否
@@ -582,6 +600,7 @@ export default{
                 this.handleError(error)
             });
         },
+
         // 取消查询，显示所有租户数据
         cancelSearchTenant:function(){
             this.currentPage = 1;
@@ -604,6 +623,7 @@ export default{
                 this.handleError(error)
             });
         },
+
         // 查询镜像
         searchImage:function(){
             this.currentPage = 1;
@@ -617,7 +637,7 @@ export default{
                 data: {
                     "name": this.imageSearchForm.searchImageName,
                     // "companyId": this.imageSearchForm.searchCompanyId,
-                    // "status": this.imageSearchForm.searchStatus,
+                    "status": this.imageSearchForm.searchStatus,
                 }
             }).then((result) => {
                 console.log(result)
@@ -629,6 +649,7 @@ export default{
             });
 
         },
+
         // 取消查询，显示所有镜像数据
         cancelSearchImage:function(){
             this.currentPage = 1;
@@ -652,13 +673,44 @@ export default{
             });
 
         },
+
         // 查询容器实例
         searchContainer:function(){
-
+            this.currentPage = 1;
+            // 调用接口 通过namespace查询容器实例
+            axios({
+                method: 'get',
+                url: 'api/container/list?' + "namespace=" + this.containerSearchForm.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+            }).then((result) => {
+                console.log(result)
+                this.containerData = result.data.data.records
+                this.totalContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
         },
+
         // 取消查询，显示所有容器实例数据
         cancelSearchContainer:function(){
-
+            this.currentPage = 1;
+            axios({
+                method: 'get',
+                url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+            }).then((result) => {
+                console.log(result)
+                this.containerData = result.data.data.records
+                this.totalContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
         },
 
         // 删除容器实例
@@ -909,6 +961,14 @@ export default{
             }));
         },
 
+        // 获取镜像审批中的选中项
+        imageVerifySelectionChange(val) {
+            this.selectedImageList = val.map(row => ({
+                id: row.id,
+                approve: 2
+            }));
+        },
+
         // 获取镜像管理中的选中项
         imageSelectionChange(val) {
             this.selectedImageList = val.map(row => ({
@@ -923,7 +983,7 @@ export default{
         containerSelectionChange(val) {
             this.selectedContainerList = val.map(row => ({
                 namespace: row.namespace,
-                name: row.containerName,
+                name: row.podName,
             }));
         },
 
@@ -955,6 +1015,22 @@ export default{
             this.mainValue = 2;
             this.currentPage = 1;
             // 获得所有待审批镜像信息
+            axios({
+                method: 'post',
+                url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+                data: {
+                    "status": 0,
+                }
+            }).then((result) => {
+                console.log(result)
+                this.verifyImageList = result.data.data.records
+            }).catch(error => {
+                this.handleError(error)
+            });
         },
 
         // 用户管理页面
@@ -1112,10 +1188,10 @@ export default{
             }
         },
 
-        // 创建镜像
-        createImage:function(){
+        // // 创建镜像
+        // createImage:function(){
 
-        },
+        // },
 
         // 创建容器实例
         createContainer:function(index, row){
@@ -1221,6 +1297,102 @@ export default{
                 this.$message.success("审批成功！");
             }
         },
+
+        // 镜像审批通过
+        approveImage:function(){
+            if (this.selectedImageList == '') {
+                this.$message("未选择镜像！");
+            }
+            else {
+                // 将approve赋值为1 表示通过
+                this.selectedImageList.forEach(item => {
+                    item.approve = 1;
+                });
+                // 通过
+                axios({
+                    method: 'post',
+                    url: 'api/image/review',
+                    headers: {
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: this.selectedImageList,
+                }).then((result) => {
+                    console.log(result)
+                }).catch(error => {
+                    this.handleError(error)
+                });
+                // 获取待审批用户信息
+                this.currentPage = 1
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "status": 0,
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.verifyImageList = result.data.data.records
+                }).catch(error => {
+                    this.handleError(error)
+                });
+                // 弹窗提示
+                this.$message.success("审批成功！");
+            }
+            
+            console.log("选中的镜像：", this.selectedImageList)
+        },
+
+        // 镜像审批不通过
+        rejectImage:function(){
+            if (this.selectedImageList == '') {
+                this.$message("未选择用户！");
+            }
+            else {
+                // 将approve赋值为0 表示不通过
+                this.selectedImageList.forEach(item => {
+                    item.approve = 0;
+                });
+                // 不通过
+                axios({
+                    method: 'post',
+                    url: 'api/image/review',
+                    headers: {
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: this.selectedImageList,
+                }).then((result) => {
+                    console.log(result)
+                }).catch(error => {
+                    this.handleError(error)
+                });
+                // 获取待审批用户信息
+                this.currentPage = 1
+                axios({
+                    method: 'post',
+                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "status": 0,
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.verifyImageList = result.data.data.records
+                }).catch(error => {
+                    this.handleError(error)
+                });
+                // 弹窗提示
+                this.$message.success("审批成功！");
+            }
+        },
+
+
 
         //点击按钮切换页面
         handleCurrentChange(currentPage) {
@@ -1357,7 +1529,7 @@ export default{
         },
 
         // 格式化用户状态
-        formatUserStatus(row, column, cellValue) {
+        formatStatus(cellValue) {
             switch (cellValue) {
                 case 0:
                     return '待审批';
