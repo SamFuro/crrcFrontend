@@ -30,10 +30,10 @@
         <el-form-item label="公司" prop="companyId">
           <el-select v-model="userInfo.companyId" placeholder="请选择">
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in companyOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -91,7 +91,8 @@ export default {
         phone: [{ required: true, message: "手机号码不能为空！", trigger: "blur" }],
         companyId: [{required: true, message: "请选择隶属公司！", trigger: "change" }],
       },
-      options: [{
+
+      companyOptions: [{
           value: '1',
           label: '公司1'
         }, {
@@ -101,12 +102,27 @@ export default {
           value: '3',
           label: '公司3'
         }],
+
         companyId: '',
         //设置秘钥和秘钥偏移量
         SECRET_KEY: CryptoJS.enc.Utf8.parse("ul29s9b5l1x8sqo7"),
         SECRET_IV: CryptoJS.enc.Utf8.parse("d8g65df9vc6s23df"),
     };
   },
+  mounted(){
+    // 获取公司列表
+    axios({
+        method: 'get',
+        url: 'api/company/list/notLogin?size=50',
+      }).then((result) => {
+          console.log(result.data)
+          this.companyOptions = result.data.records
+          console.log(this.companyOptions)
+      }).catch(error => {
+          this.handleError(error)
+      })
+  },
+
   methods: {
     // 密码传输过程 数据加密
     encrypt(word) {
