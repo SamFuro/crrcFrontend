@@ -14,3 +14,15 @@ new Vue({
   router,
   render: h => h(App)
 }).$mount('#app')
+
+
+// 设置响应拦截器
+axios.interceptors.response.use(
+  response => {
+    let res = response.data
+    if(res.code == 1) {
+      return Promise.reject(res.msg)
+    }
+    return response;
+  }
+);

@@ -99,7 +99,7 @@
                         </el-form-item>
                         <!-- 创建镜像和删除镜像 -->
                         <el-form-item style="margin-left: 20px;">
-                            <el-button type="primary" @click="uploadImageDiaVisible = true">上传</el-button>
+                            <el-button type="primary" @click="openUploadImageDia">上传</el-button>
                             <el-button type="danger" @click="deleteImage">删除</el-button>
                         </el-form-item>
                     </el-form>
@@ -112,7 +112,7 @@
                             </el-form-item>
                             <el-form-item>
                             <el-button icon="el-icon-document-copy" type="primary" @click="checkFile">上传镜像</el-button>
-                                        <input id="fileInput" type="file" style="display: none;" @change="uploadImage($event)" />
+                                        <input id="fileInput" type="file" style="display: none;"  ref="uploadRef" @change="uploadImage($event)" />
                             </el-form-item>
                         </el-form>
                         <div slot="footer" class="dialog-footer">
@@ -1038,6 +1038,12 @@ export default{
             });
         }, 
 
+        // 打开上传镜像的表单
+        openUploadImageDia(){
+            this.uploadImageName = ""
+            this.uploadImageDiaVisible = true
+        },
+
         // 打开创建容器实例的表单
         openCreateContainerDia(row){
             this.createContainerDiavisible = true
@@ -1067,24 +1073,26 @@ export default{
             if (error.response) {
                 // error.response包含了服务器响应的详细信息
                 const statusCode = error.response.status;
-                const errorMessage = error.response.data.msg;
+                const errorMessage = error.response.data.error;
                 // 根据不同的错误代码，显示不同的错误消息
-                switch (statusCode) {
-                    case 400:
-                        alert(`400: ${errorMessage}`);
-                        break;
-                    case 404:
-                        alert(`404: ${errorMessage}`);
-                        break;
-                    case 500:
-                        alert(`服务器错误，请稍后重试。`);
-                        break;
-                    default:
-                        alert(`未知错误: ${errorMessage}`);
-                    }
+                // switch (statusCode) {
+                //     case 400:
+                //         alert(`400: ${errorMessage}`);
+                //         break;
+                //     case 404:
+                //         alert(`404: ${errorMessage}`);
+                //         break;
+                //     case 500:
+                //         alert(`服务器错误，请稍后重试。`);
+                //         break;
+                //     default:
+                //         alert(`未知错误: ${errorMessage}`);
+                //     }
+
+                this.$message.error(`${statusCode}: ${errorMessage}`);
                 } else {
                     // 其他错误（例如网络问题）
-                    alert('网络错误，请检查你的连接。');
+                    this.$message.error(`${error}`);
                 }
         },
 
@@ -1231,34 +1239,18 @@ export default{
                         },
                     }).then((result) => {
                         console.log(result)
-                        this.uploadImageName = ""
-                        this.$message.success("镜像上传成功！")
+                        this.$message.success("镜像上传成功，请等待管理员审批！")
                     }).catch(error => {
-                        // this.handleError(error)
-                        if (error.response) {
-                        // error.response包含了服务器响应的详细信息
-                        const statusCode = error.response.status;
-                        const errorMessage = error.response.error;
-                        // 根据不同的错误代码，显示不同的错误消息
-                        switch (statusCode) {
-                            case 400:
-                                this.$message.error(`400: ${errorMessage}`);
-                                break;
-                            case 404:
-                                this.$message.error(`404: ${errorMessage}`);
-                                break;
-                            case 500:
-                                this.$message.error("租户下已存在该版本的镜像！")
-                                break;
-                            default:
-                                this.$message.error(`未知错误: ${errorMessage}`);
-                            }
-                        }
+                        this.handleError(error)
                     });
-                    
+           
                 }).catch(error => {
                     this.handleError(error)
                 });
+            // // 清空上传文件列表
+            const fileInput = this.$refs.uploadRef;
+            // 重置files属性
+            fileInput.value = null;
         },
 
         // 将时间中间的T换成空格

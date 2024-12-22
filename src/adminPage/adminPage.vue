@@ -1885,28 +1885,30 @@ export default{
 
         // 错误处理
         handleError(error) {
-        if (error.response) {
-            // error.response包含了服务器响应的详细信息
-            const statusCode = error.response.status;
-            const errorMessage = error.response.data.msg;
-            // 根据不同的错误代码，显示不同的错误消息
-            switch (statusCode) {
-                case 400:
-                    alert(`400: ${errorMessage}`);
-                    break;
-                case 404:
-                    alert(`404: ${errorMessage}`);
-                    break;
-                case 500:
-                    alert(`服务器错误，请稍后重试。`);
-                    break;
-                default:
-                    alert(`未知错误: ${errorMessage}`);
+            if (error.response) {
+                // error.response包含了服务器响应的详细信息
+                const statusCode = error.response.status;
+                const errorMessage = error.response.data.msg;
+                // 根据不同的错误代码，显示不同的错误消息
+                // switch (statusCode) {
+                //     case 400:
+                //         alert(`400: ${errorMessage}`);
+                //         break;
+                //     case 404:
+                //         alert(`404: ${errorMessage}`);
+                //         break;
+                //     case 500:
+                //         alert(`服务器错误，请稍后重试。`);
+                //         break;
+                //     default:
+                //         alert(`未知错误: ${errorMessage}`);
+                //     }
+                
+                this.$message.error(`${statusCode}: ${errorMessage}`);
+                } else {
+                    // 其他错误（例如网络问题）
+                    this.$message.error(`${error}`);
                 }
-            } else {
-                // 其他错误（例如网络问题）
-                alert('网络错误，请检查你的连接。');
-            }
         },
 
     },
