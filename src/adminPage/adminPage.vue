@@ -19,6 +19,7 @@
                             <el-menu-item index="2-2" @click="changeMainTo4">租户管理</el-menu-item>
                             <el-menu-item index="2-3" @click="changeMainTo5">镜像管理</el-menu-item>
                             <el-menu-item index="2-4" @click="changeMainTo6">容器实例管理</el-menu-item>
+                            <el-menu-item index="2-5" @click="changeMainTo7">日志管理</el-menu-item>
                             <!-- <el-menu-item index="2-5" @click="changeMainTo7">软件运行态log管理</el-menu-item> -->
                         </el-menu-item-group>
                     </el-submenu>
@@ -266,8 +267,15 @@
                     <el-form-item label="镜像名称" style="margin-left: 30px;" prop="searchImageName">
                         <el-input v-model="imageSearchForm.searchImageName" placeholder="请输入内容"></el-input>
                     </el-form-item>
-                    <el-form-item label="公司Id" style="margin-left: 30px;" prop="searchCompanyId">
-                        <el-input v-model="imageSearchForm.searchCompanyId" placeholder="请输入内容"></el-input>
+                    <el-form-item label="公司" style="margin-left: 30px;" prop="searchCompanyId">
+                        <el-select v-model="imageSearchForm.searchCompanyId" placeholder="公司">
+                            <el-option
+                            v-for="item in companyOptions"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="镜像状态" style="margin-left: 30px;" prop="searchStatus">
                             <el-select v-model="imageSearchForm.searchStatus" placeholder="状态">
@@ -374,7 +382,7 @@
 
                 <!-- 软件log dialog -->
                 <el-dialog title="软件运行态日志" :visible.sync="softwareLogDiavisible" v-if="softwareLogDiavisible">
-                    <el-table :data="softwareLogData2" key="softwareLogDataTable">
+                    <el-table :data="softwareLogData" key="softwareLogDataTable">
                         <el-table-column label="日志名称" prop="fileName" align="center"></el-table-column>
                         <!-- 操作按钮 查看&下载 -->
                         <el-table-column label="操作" align="center">
@@ -388,6 +396,7 @@
                     <el-pagination
                         background
                         align="center"
+                        style="margin-top: 20px"
                         layout="prev, pager, next, jumper"
                         :total="this.totalSoftwareLogData"
                         @current-change="handleCurrentChange"
@@ -417,10 +426,10 @@
                 </el-pagination>
             </el-main>
 
-            <!-- 软件运行态log管理主页面 -->
+            <!-- 日志管理主页面 -->
             <el-main v-if="mainValue == 7">
                 <!-- 查询功能 -->
-                <el-form :inline="true" :model="softwareLogSearchForm" align="center" ref="softwareLogSearchForm" :rules="logRules">
+                <!-- <el-form :inline="true" :model="softwareLogSearchForm" align="center" ref="softwareLogSearchForm" :rules="logRules">
                     <el-form-item label="公司名称" prop="searchCompanyName" style="margin-left: 30px;">
                         <el-input v-model="softwareLogSearchForm.searchCompanyName" placeholder="请输入内容"></el-input>
                     </el-form-item>
@@ -434,34 +443,65 @@
                         <el-button type="primary" @click="searchSoftwareLog">查询</el-button>
                         <el-button type="danger" @click="cancelSearchSoftwareLog">取消</el-button>
                     </el-form-item>
-                </el-form>
+                </el-form> -->
+
                 <!-- 内容表格 -->
-                <el-table :data="softwareLogData" border ref="softwareLogData" key="softwareLogDataTable">
-                    <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
-                    <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-                    <el-table-column prop="containerName" label="容器名称" align="center"></el-table-column>
-                    <el-table-column prop="date" label="日期" align="center"></el-table-column>
-                    <el-table-column prop="fileName" label="文件名" align="center"></el-table-column>
-                    <el-table-column prop="url" label="url" align="center">
-                        <template slot-scope="scope">
-                            <el-link href="www.baidu.com" target="_blank">查看log</el-link>
+                <el-table :data="historyContainerData" border key="historyContainerData">
+                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
+                    <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                    <el-table-column prop="createTime" label="创建时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.createTime) }}
                         </template>
                     </el-table-column>
-                    <!-- 操作按钮 编辑&删除
-                    <el-table-column label="操作">
+                    <!-- Log相关按钮 包括软件log和容器log的查看、下载和删除 -->
+                    <el-table-column label="软件Log" align="center">
                         <template slot-scope="scope">
-                            <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                            <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                            <el-button size="mini" type="danger" @click="openHistorySoftwareLogDia(scope.row)">查看软件日志</el-button>
                         </template>
-                    </el-table-column> -->
+                    </el-table-column>
                 </el-table>
                 <br>
+
+                <!-- 历史容器实例界面 软件log dialog -->
+                <el-dialog title="软件运行态日志" :visible.sync="historSoftwareLogDiavisible" v-if="historSoftwareLogDiavisible">
+                    <el-table :data="historySoftwareLogData" key="historySoftwareLogData">
+                        <el-table-column label="日志名称" prop="fileName" align="center"></el-table-column>
+                        <!-- 操作按钮 查看&下载&删除 -->
+                        <el-table-column label="查看内容" align="center">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="success" @click="viewSoftwareLog(scope.row)">查看</el-button>
+                                <el-button size="mini" type="danger" @click="downloadSoftwareLog(scope.row)">下载</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="删除操作" align="center">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="danger"">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <!-- 分页条 -->
+                    <el-pagination
+                        background
+                        align="center"
+                        style="margin-top: 20px"
+                        layout="prev, pager, next, jumper"
+                        :total="this.totalHistorySoftwareLogData"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage"
+                        :page-size="pageSize">
+                    </el-pagination>
+                </el-dialog>
 
                 <!-- 分页条 -->
                 <el-pagination
                     background
+                    align="center"
                     layout="prev, pager, next, jumper"
-                    :total="this.totalLogData"
+                    :total="this.totalHistoryContainerData"
                     @current-change="handleCurrentChange"
                     :current-page="currentPage"
                     :page-size="pageSize">
@@ -485,23 +525,26 @@ export default{
             companyData: [], // 租户数据
             imageData: [], // 镜像管理数据
             containerData: [], // 容器实例数据
-            softwareLogData: [], // 软件运行态log数据
+            historyContainerData: [], // 历史的容器实例数据（running = 0）
             verifyUserList: [], // 待审批用户列表
             verifyImageList: [], // 待审批镜像列表
             selectedUserList: [], // 选中的用户列表
             selectedImageList: [], // 选中的镜像列表
             selectedContainerList: [], // 选中的容器实例列表
             originSoftwareLogData: [], // 初始软件运行态log数据（纯数组形式）
-            softwareLogData2: [], // 软件log数据（如log.txt testlog.txt等）
+            softwareLogData: [], // 处理后软件log数据（如log.txt testlog.txt等）
+            historyOriginSoftwareLogData: [], // （历史容器实例）初始软件运行态log数据（纯数组形式）
+            historySoftwareLogData: [], // （历史容器实例）处理后软件log数据（如log.txt testlog.txt等）
             companyOptions: [], // 公司列表，供下拉选择
             totalUserData: 0, // 用户数据总条数
             totalVerifyUserData: 0, // 待审批用户数据总条数
             totalCompanyData: 0, // 租户数据总条数
             totalContainerData: 0, // 容器实例数据总条数
+            totalHistoryContainerData: 0, // 历史容器实例数据总条数
             totalImageData: 0, // 镜像数据总条数
             totalVerifyImageData: 0, // 待审批镜像数据总条数
-            totalLogData: 0, // 软件log数据总条数
             totalSoftwareLogData: 0, // 软件运行态log数据总条数
+            totalHistorySoftwareLogData: 0, // （历史容器实例）软件运行态log数据总条数
             totalPvcData: 0, // pvc数据总条数
             mainValue: 0, // 控制主页面切换
             currentPage: 1, // 当前页 刷新后默认显示第一页
@@ -511,6 +554,7 @@ export default{
             companyDataChangeDiaVisible: false, // 修改租户信息表单显示与否
             softwareLogDiavisible: false, // 软件log表单显示与否
             containerLogDiavisible: false, // 容器log表单显示与否
+            historSoftwareLogDiavisible: false, // 历史容器实例的软件log表单显示与否
 
             // 个人信息
             personalInfo: {  
@@ -549,13 +593,6 @@ export default{
             containerSearchForm: {  
                 namespace: "", // 命名空间
                 username: "", // 用户名
-            },
-
-            // 软件运行态log管理搜索功能中的值
-            softwareLogSearchForm: {
-                searchCompanyName: "",
-                searchUsername: "",
-                searchContainerName: "",
             },
 
             // 更改用户信息时，选中的用户的值
@@ -611,10 +648,10 @@ export default{
         // 获取公司列表
         axios({
             method: 'get',
-            url: 'api/company/list/notLogin?size=50',
+            url: 'api/company/list/notLogin?size=100',
         }).then((result) => {
             console.log(result.data)
-            this.companyOptions = result.data.records
+            this.companyOptions = result.data.data.records
             console.log(this.companyOptions)
         }).catch(error => {
             this.handleError(error)
@@ -643,8 +680,8 @@ export default{
                         }
                     }).then((result) => {
                         console.log(result)
-                        this.userData = result.data.records
-                        this.totalUserData = result.data.total // 获取总条数
+                        this.userData = result.data.data.records
+                        this.totalUserData = result.data.data.total // 获取总条数
                     }).catch(error => {
                         this.handleError(error)
                     });
@@ -663,8 +700,8 @@ export default{
                         }
                     }).then((result) => {
                         console.log(result)
-                        this.userData = result.data.records
-                        this.totalUserData = result.data.total // 获取总条数
+                        this.userData = result.data.data.records
+                        this.totalUserData = result.data.data.total // 获取总条数
                     }).catch(error => {
                         this.handleError(error)
                     });
@@ -689,8 +726,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.userData = result.data.records
-                this.totalUserData = result.data.total // 获取总条数
+                this.userData = result.data.data.records
+                this.totalUserData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -711,8 +748,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.companyData = result.data.records
-                this.totalCompanyData = result.data.total // 获取总条数
+                this.companyData = result.data.data.records
+                this.totalCompanyData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -734,8 +771,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.companyData = result.data.records
-                this.totalCompanyData = result.data.total // 获取总条数
+                this.companyData = result.data.data.records
+                this.totalCompanyData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -753,7 +790,7 @@ export default{
                 },
                 data: {
                     "name": this.imageSearchForm.searchImageName,
-                    // "companyId": this.imageSearchForm.searchCompanyId,
+                    "companyId": this.imageSearchForm.searchCompanyId,
                     "status": this.imageSearchForm.searchStatus,
                 }
             }).then((result) => {
@@ -885,52 +922,52 @@ export default{
             }
         },
 
-        // 查询软件运行态log
-        searchSoftwareLog:function(){
-            axios({
-                method: 'post',
-                url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
-                headers: {
-                    'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('adminToken')}`
-                },
-                data: {
-                    "companyName": this.softwareLogSearchForm.searchCompanyName,
-                    "username": this.softwareLogSearchForm.searchUsername,
-                    "containerName": this.softwareLogSearchForm.searchContainerName,
-                }
-            }).then((result) => {
-                console.log(result)
-                this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
-            }).catch(error => {
-                this.handleError(error)
-            });
-        },
-        // 取消查询，显示所有软件运行态log
-        cancelSearchSoftwareLog:function(){
-            this.currentPage = 1;
-            this.resetForm("softwareLogSearchForm");
-            axios({
-                method: 'post',
-                url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
-                headers: {
-                    'content-Type' : "application/json",
-                    "Authorization": `${sessionStorage.getItem('adminToken')}`
-                },
-                data: {
-                    // "companyName": this.softwareLogSearchForm.searchCompanyName,
-                    // "username": this.softwareLogSearchForm.searchUsername,
-                    // "containerName": this.softwareLogSearchForm.searchContainerName,
-                }
-            }).then((result) => {
-                console.log(result)
-                this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
-            }).catch(error => {
-                this.handleError(error)
-            });
-        },
+        // // 查询软件运行态log
+        // searchSoftwareLog:function(){
+        //     axios({
+        //         method: 'post',
+        //         url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+        //         headers: {
+        //             'content-Type' : "application/json",
+        //             "Authorization": `${sessionStorage.getItem('adminToken')}`
+        //         },
+        //         data: {
+        //             "companyName": this.softwareLogSearchForm.searchCompanyName,
+        //             "username": this.softwareLogSearchForm.searchUsername,
+        //             "containerName": this.softwareLogSearchForm.searchContainerName,
+        //         }
+        //     }).then((result) => {
+        //         console.log(result)
+        //         this.softwareLogData = result.data.data.records
+        //         this.totalLogData = result.data.data.total // 获取总条数
+        //     }).catch(error => {
+        //         this.handleError(error)
+        //     });
+        // },
+        // // 取消查询，显示所有软件运行态log
+        // cancelSearchSoftwareLog:function(){
+        //     this.currentPage = 1;
+        //     this.resetForm("softwareLogSearchForm");
+        //     axios({
+        //         method: 'post',
+        //         url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+        //         headers: {
+        //             'content-Type' : "application/json",
+        //             "Authorization": `${sessionStorage.getItem('adminToken')}`
+        //         },
+        //         data: {
+        //             // "companyName": this.softwareLogSearchForm.searchCompanyName,
+        //             // "username": this.softwareLogSearchForm.searchUsername,
+        //             // "containerName": this.softwareLogSearchForm.searchContainerName,
+        //         }
+        //     }).then((result) => {
+        //         console.log(result)
+        //         this.softwareLogData = result.data.data.records
+        //         this.totalLogData = result.data.data.total // 获取总条数
+        //     }).catch(error => {
+        //         this.handleError(error)
+        //     });
+        // },
 
         // 编辑用户数据
         editUserData:function(index, row){  
@@ -1139,8 +1176,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.verifyUserList = result.data.records
-                this.totalVerifyUserData = result.data.total // 获得总条数
+                this.verifyUserList = result.data.data.records
+                this.totalVerifyUserData = result.data.data.total // 获得总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1187,8 +1224,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.userData = result.data.records
-                this.totalUserData = result.data.total // 获取总条数
+                this.userData = result.data.data.records
+                this.totalUserData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1211,8 +1248,8 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.companyData = result.data.records
-                this.totalCompanyData = result.data.total // 获取总条数
+                this.companyData = result.data.data.records
+                this.totalCompanyData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1269,31 +1306,32 @@ export default{
             });
         },
 
-        // 软件运行态log页面
-        changeMainTo7:function(){
-            this.mainValue = 7;
-            this.currentPage = 1;
-            // 获得软件log信息
+        // 日志管理页面
+        changeMainTo7:function() {
+            this.mainValue = 7
+            this.currentPage = 1
+            // 获取所有容器实例信息
             axios({
                 method: 'post',
-                url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
                 data: {
-                    // "companyName": "",
-                    // "username": "",
-                    // "containerName": "",
+                    "namespace": "",
+                    "username": "", 
+                    "running": "0",
                 }
             }).then((result) => {
                 console.log(result)
-                this.softwareLogData = result.data.data.records
-                this.totalLogData = result.data.data.total // 获取总条数
+                this.historyContainerData = result.data.data.records
+                this.totalHistoryContainerData = result.data.data.total // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
         },
+
 
         // 创建租户
         createCompany:function(){
@@ -1389,7 +1427,7 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.verifyUserList = result.data.records
+                    this.verifyUserList = result.data.data.records
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1428,7 +1466,7 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.verifyUserList = result.data.records
+                    this.verifyUserList = result.data.data.records
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1488,7 +1526,7 @@ export default{
         // 镜像审批不通过
         rejectImage:function(){
             if (this.selectedImageList == '') {
-                this.$message("未选择用户！");
+                this.$message("未选择镜像！");
             }
             else {
                 // 将approve赋值为0 表示不通过
@@ -1531,6 +1569,38 @@ export default{
             }
         },
 
+        // 打开历史容器实力页面软件运行态log的对话框
+        openHistorySoftwareLogDia(row) {
+            this.historSoftwareLogDiavisible = true
+            // 将该容器实例的podName和namespace暂时保存下来
+            this.tempContainerData.podName = row.podName
+            this.tempContainerData.namespace = row.namespace
+            console.log(this.tempContainerData)
+            // 调用接口获取软件日志列表
+            this.currentPage = 0
+            axios({
+                method: 'get',
+                url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+            }).then((result) => {
+                console.log(result)
+                if(result.data.data.content != null){
+                    this.historyOriginSoftwareLogData = result.data.data.content
+                    // 转换格式 方便在el-table中显示
+                    this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
+                        return {
+                            fileName: item
+                        };
+                    });
+                }
+                this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
         // 打开软件运行态log的对话框
         openSoftwareLogDia(row){
             this.softwareLogDiavisible = true
@@ -1551,7 +1621,7 @@ export default{
                     if(result.data.data.content != null){
                         this.originSoftwareLogData = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.softwareLogData2 = this.originSoftwareLogData.map(item => {
+                        this.softwareLogData = this.originSoftwareLogData.map(item => {
                             return {
                                 fileName: item
                             };
@@ -1675,8 +1745,8 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.verifyUserList = result.data.records
-                    this.totalVerifyUserData = result.data.total // 获得总条数
+                    this.verifyUserList = result.data.data.records
+                    this.totalVerifyUserData = result.data.data.total // 获得总条数
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1717,8 +1787,8 @@ export default{
                             }
                         }).then((result) => {
                             console.log(result)
-                            this.userData = result.data.records
-                            this.totalUserData = result.data.total // 获取总条数
+                            this.userData = result.data.data.records
+                            this.totalUserData = result.data.data.total // 获取总条数
                         }).catch(error => {
                             this.handleError(error)
                         });
@@ -1737,8 +1807,8 @@ export default{
                             }
                         }).then((result) => {
                             console.log(result)
-                            this.userData = result.data.records
-                            this.totalUserData = result.data.total // 获取总条数
+                            this.userData = result.data.data.records
+                            this.totalUserData = result.data.data.total // 获取总条数
                         }).catch(error => {
                             this.handleError(error)
                         });
@@ -1758,8 +1828,8 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.companyData = result.data.records
-                    this.totalCompanyData = result.data.total // 获取总条数
+                    this.companyData = result.data.data.records
+                    this.totalCompanyData = result.data.data.total // 获取总条数
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1810,6 +1880,7 @@ export default{
 
             // 如果当前页面是容器实例页面且打开了软件log的dialog
             if(this.mainValue == 6 && this.softwareLogDiavisible == true) {
+                // 调用接口获取软件日志列表
                 axios({
                     method: 'get',
                     url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
@@ -1821,7 +1892,7 @@ export default{
                     if(result.data.data.content != null){
                         this.originSoftwareLogData = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.softwareLogData2 = this.originSoftwareLogData.map(item => {
+                        this.softwareLogData = this.originSoftwareLogData.map(item => {
                             return {
                                 fileName: item
                             };
@@ -1833,24 +1904,51 @@ export default{
                 });
             }
 
-            // 如果当前页面是软件log管理页面
-            if(this.mainValue == 7) {
+            // 如果当前页面是日志管理页面且没有打开软件log的dialog
+            if(this.mainValue == 7 && this.historSoftwareLogDiavisible == false) {
+                // 获取所有容器实例信息
                 axios({
                     method: 'post',
-                    url: 'api/log/getList?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                    url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         'content-Type' : "application/json",
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
-                        "companyName": this.softwareLogSearchForm.searchCompanyName,
-                        "username": this.softwareLogSearchForm.searchUsername,
-                        "containerName": this.softwareLogSearchForm.searchContainerName,
+                        "namespace": "",
+                        "username": "", 
+                        "running": "0",
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.companyData = result.data.records
-                    this.totalCompanyData = result.data.total // 获取总条数
+                    this.historyContainerData = result.data.data.records
+                    this.totalHistoryContainerData = result.data.data.total // 获取总条数
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+
+            // 如果当前页面是日志管理页面且打开了软件log的dialog
+            if(this.mainValue == 7 && this.historSoftwareLogDiavisible == true) {
+                // 调用接口获取软件日志列表
+                axios({
+                    method: 'get',
+                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    headers: {
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                }).then((result) => {
+                    console.log(result)
+                    if(result.data.data.content != null){
+                        this.historyOriginSoftwareLogData = result.data.data.content
+                        // 转换格式 方便在el-table中显示
+                        this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
+                            return {
+                                fileName: item
+                            };
+                        });
+                    }
+                    this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1889,28 +1987,13 @@ export default{
                 // error.response包含了服务器响应的详细信息
                 const statusCode = error.response.status;
                 const errorMessage = error.response.data.msg;
-                // 根据不同的错误代码，显示不同的错误消息
-                // switch (statusCode) {
-                //     case 400:
-                //         alert(`400: ${errorMessage}`);
-                //         break;
-                //     case 404:
-                //         alert(`404: ${errorMessage}`);
-                //         break;
-                //     case 500:
-                //         alert(`服务器错误，请稍后重试。`);
-                //         break;
-                //     default:
-                //         alert(`未知错误: ${errorMessage}`);
-                //     }
-                
+                // 错误提示
                 this.$message.error(`${statusCode}: ${errorMessage}`);
                 } else {
                     // 其他错误（例如网络问题）
                     this.$message.error(`${error}`);
                 }
         },
-
     },
 
 }

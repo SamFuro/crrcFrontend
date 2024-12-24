@@ -54,6 +54,9 @@
                     <el-form-item label="新的密码" :label-width='"150px"'>
                         <el-input v-model="editUserDataForm.password" autocomplete="off"></el-input>
                     </el-form-item>
+                    <el-form-item label="请再次输入新的密码" :label-width='"150px"'>
+                        <el-input v-model="editUserDataForm.passConfirm" autocomplete="off"></el-input>
+                    </el-form-item>
                 </el-form>
                 <div slot="footer">
                     <el-button @click="userPasswordChangeDiaVisible = false">取 消</el-button>
@@ -115,19 +118,19 @@
                                         <input id="fileInput" type="file" style="display: none;"  ref="uploadRef" @change="uploadImage($event)" />
                             </el-form-item>
                         </el-form>
-                        <div slot="footer" class="dialog-footer">
+                        <!-- <div slot="footer" class="dialog-footer">
                             <el-button @click="uploadImageDiaVisible = false">取 消</el-button>
                             <el-button type="primary" @click="uploadImageDiaVisible = false">确 定</el-button>
-                        </div>
+                        </div> -->
                     </el-dialog>
 
                      <!-- 内容表格 -->
                     <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable" ref="imageData">
-                        <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
+                        <el-table-column prop="name" label="镜像名称" align="center" width="100px"></el-table-column>
                         <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
-                        <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
-                        <el-table-column prop="tags" label="标签" align="center"></el-table-column>
-                        <el-table-column prop="pullCount" label="pullCount" align="center"></el-table-column>
+                        <el-table-column prop="username" label="用户名称" align="center" width="100px"></el-table-column>
+                        <el-table-column prop="tags" label="标签" align="center" width="100px"></el-table-column>
+                        <el-table-column prop="pullCount" label="使用次数" align="center" width="100px"></el-table-column>
                         <el-table-column prop="creationTime" label="创建时间" align="center">
                             <template #default="scope">
                                 {{ formatTime(scope.row.creationTime) }}
@@ -138,9 +141,9 @@
                                 {{ formatTime(scope.row.updateTime) }}
                             </template>
                         </el-table-column>
-                        <el-table-column prop="projectName" label="项目名称" align="center"></el-table-column>
+                        <el-table-column prop="projectName" label="项目名称" align="center" width="200px"></el-table-column>
                         <!-- 操作按钮 创建容器实例 -->
-                        <el-table-column label="操作">
+                        <el-table-column label="操作" align="center">
                             <template slot-scope="scope">
                                 <el-button size="mini" type="danger" @click="openCreateContainerDia(scope.row)">创建容器实例</el-button>
                             </template>
@@ -332,6 +335,7 @@
 
 <script>
 import axios from "axios";
+import { Loading } from 'element-ui';
 
 export default{
     data () {
@@ -400,9 +404,10 @@ export default{
                 name: "",
                 phone: "",
                 password: "",
+                passConfirm: "",
             },
 
-
+            // 软件运行态log table rules（测试）
             rules: {
                 searchCompanyName: [{ required: false, trigger:"blur"},],
                 searchUsername: [{ required: false, trigger:"blur"},],
@@ -412,11 +417,10 @@ export default{
             imageRules:{
                 searchImageName: [{ required: false, trigger:"change"}],    
             },
-            // 容器实例table tules
+            // 容器实例table rules
             containerRules:{
                 username: [{ required: false, trigger:"change"}],
             },
-
 
         }
     },
@@ -465,7 +469,7 @@ export default{
                 },
                 data: {
                     "name": "",
-                    "companyId": "",
+                    "companyId": this.userData.companyId,
                     "status": "",
                 }
             }).then((result) => {
@@ -580,8 +584,14 @@ export default{
 
         // 更改用户密码
         changeUserPassword:function(){
-            if(this.editUserDataForm.password == ''){
-                this.$message.error("新密码为空！")
+            if(this.editUserDataForm.password == '') {
+                this.$message.error("请输入新密码！")
+            }
+            else if(this.editUserDataForm.passConfirm == '') {
+                this.$message.error("请再次输入新密码！")
+            }
+            else if(this.editUserDataForm.passConfirm != this.editUserDataForm.password) {
+                this.$message.error("两次输入的密码不一致！")
             }
             else {
                 // 调用接口更改密码
@@ -662,7 +672,7 @@ export default{
             },
             data: {
                 "name": this.imageSearchForm.searchImageName,
-                // "companyId": this.imageSearchForm.searchCompanyId,
+                "companyId": this.userData.companyId,
                 // "status": this.imageSearchForm.searchStatus,
             }
         }).then((result) => {
@@ -688,6 +698,7 @@ export default{
                 },
                 data: {
                     "name": "",
+                    "companyId": this.userData.companyId
                 }
             }).then((result) => {
                 console.log(result)
@@ -728,6 +739,7 @@ export default{
                         },
                         data: {
                             "name": "",
+                            "companyId": this.userData.companyId
                         }
                     }).then((result) => {
                         this.imageData = result.data.data.records
@@ -1074,21 +1086,7 @@ export default{
                 // error.response包含了服务器响应的详细信息
                 const statusCode = error.response.status;
                 const errorMessage = error.response.data.error;
-                // 根据不同的错误代码，显示不同的错误消息
-                // switch (statusCode) {
-                //     case 400:
-                //         alert(`400: ${errorMessage}`);
-                //         break;
-                //     case 404:
-                //         alert(`404: ${errorMessage}`);
-                //         break;
-                //     case 500:
-                //         alert(`服务器错误，请稍后重试。`);
-                //         break;
-                //     default:
-                //         alert(`未知错误: ${errorMessage}`);
-                //     }
-
+                // 错误提示
                 this.$message.error(`${statusCode}: ${errorMessage}`);
                 } else {
                     // 其他错误（例如网络问题）
@@ -1111,6 +1109,7 @@ export default{
                     },
                     data: {
                         "name": this.imageSearchForm.searchImageName,
+                        "companyId": this.userData.companyId,
                     }
                 }).then((result) => {
                     console.log(result)
@@ -1213,6 +1212,11 @@ export default{
 
         // 调用接口 上传文件
         uploadImage(e) {
+            const loading = Loading.service({
+                text: '正在上传镜像，请稍等',
+                spinner: 'el-icon-loading',
+                background: 'rgba(255, 255, 255, 0.7)'
+            });
             let file = e.target.files[0]
             let formData = new FormData()
             formData.append('file', file)
@@ -1239,7 +1243,10 @@ export default{
                         },
                     }).then((result) => {
                         console.log(result)
-                        this.$message.success("镜像上传成功，请等待管理员审批！")
+                        // 上传成功，关闭加载提示，显示成功消息
+                        loading.close();
+                        this.$message.success(`镜像${this.uploadImageName}上传成功，请等待管理员审批！`)
+                        this.uploadImageDiaVisible = false
                     }).catch(error => {
                         this.handleError(error)
                     });

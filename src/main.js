@@ -20,7 +20,11 @@ new Vue({
 axios.interceptors.response.use(
   response => {
     let res = response.data
-    if(res.code == 1) {
+    // console.log("res:", res)
+    if(res.code == null) {
+      return response;
+    }
+    if(res.code != 0) {
       return Promise.reject(res.msg)
     }
     return response;

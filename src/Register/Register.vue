@@ -113,11 +113,11 @@ export default {
     // 获取公司列表
     axios({
         method: 'get',
-        url: 'api/company/list/notLogin?size=50',
+        url: 'api/company/list/notLogin?size=100',
       }).then((result) => {
           console.log(result.data)
-          this.companyOptions = result.data.records
-          console.log(this.companyOptions)
+          this.companyOptions = result.data.data.records
+          console.log("公司列表：" ,this.companyOptions)
       }).catch(error => {
           this.handleError(error)
       })
@@ -172,7 +172,7 @@ export default {
         if (error.response) {
             // error.response包含了服务器响应的详细信息
             const statusCode = error.response.status;
-            const errorMessage = error.response.data.msg;
+            const errorMessage = error.response.data.error;
             // 根据不同的错误代码，显示不同的错误消息           
             this.$message.error(`${statusCode}: ${errorMessage}`);
             } else {
