@@ -8,7 +8,7 @@
                     <el-submenu index="1">
                         <template slot="title"><i class="el-icon-message"></i>信息管理</template>
                         <el-menu-item index="1-1" @click="changeMainTo1">个人信息</el-menu-item>
-                        <el-menu-item index="1-2" @click="changeMainTo2">个人日志</el-menu-item>
+                        <!-- <el-menu-item index="1-2" @click="changeMainTo2">个人日志</el-menu-item> -->
                         <el-menu-item index="1-3" @click="changeMainTo3">镜像信息</el-menu-item>
                         <el-menu-item index="1-4" @click="changeMainTo4">容器实例信息</el-menu-item>
                         <!-- <el-menu-item index="1-5" @click="changeMainTo5">软件运行态log信息</el-menu-item> -->
@@ -67,9 +67,8 @@
 
             </el-main>
             
-            <!-- 日志信息查看页面 -->
+            <!-- 日志信息查看页面
                 <el-main v-if="mainValue == 2">
-                    <!-- 内容表格 -->
                     <el-table :data="userLogData" border>
                         <el-table-column prop="talent" label="租户"></el-table-column>
                         <el-table-column prop="username" label="用户名"></el-table-column>
@@ -81,13 +80,13 @@
                     </el-table>
                     <br>
 
-                    <!-- 分页条 -->
+                    分页条
                     <el-pagination
                         background
                         layout="prev, pager, next, jumper"
                         :total="1000">
                     </el-pagination>
-                </el-main>
+                </el-main> -->
                 
             <!-- 镜像信息页面 -->
                 <el-main v-if="mainValue == 3">
@@ -215,21 +214,21 @@
                     </el-form>
                     <!-- 内容表格 -->
                     <el-table :data="containerData" border @selection-change="containerSelectionChange" key="containerData">
-                        <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
-                        <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
-                        <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
-                        <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
+                        <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
                         <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                        <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                         <el-table-column prop="createTime" label="创建时间" align="center">
                             <template #default="scope">
                                 {{ formatTime(scope.row.createTime) }}
                             </template>
                         </el-table-column>
                         <!-- Log相关按钮 包括软件log和容器log的查看与下载 -->
-                        <el-table-column label="Log" align="center">
+                        <el-table-column label="日志" align="center" width="200px">
                             <template slot-scope="scope">
-                                <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件log</el-button>
-                                <el-button size="mini" type="danger" @click="openContainerLogDia(scope.row)">容器log</el-button>
+                                <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件日志</el-button>
+                                <el-button size="mini" type="danger" @click="openContainerLogDia(scope.row)">容器日志</el-button>
                             </template>
                         </el-table-column>
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
@@ -240,11 +239,16 @@
                     <el-dialog title="软件运行态日志" :visible.sync="softwareLogDiavisible" v-if="softwareLogDiavisible">
                         <el-table :data="softwareLogData2" key="softwareLogDataTable">
                             <el-table-column label="日志名称" prop="fileName" align="center"></el-table-column>
+                            <el-table-column label="更新时间" prop="updateTime" align="center">
+                                <template #default="scope">
+                                    {{ formatTime(scope.row.updateTime) }}
+                                </template>
+                            </el-table-column>
                             <!-- 操作按钮 查看&下载 -->
                             <el-table-column label="操作" align="center">
                                 <template slot-scope="scope">
                                     <el-button size="mini" type="success" @click="viewSoftwareLog(scope.row)">查看</el-button>
-                                    <el-button size="mini" type="danger" @click="downloadSoftwareLog(scope.row)">下载</el-button>
+                                    <el-button size="mini" type="primary" @click="downloadSoftwareLog(scope.row)">下载</el-button>
                                 </template>
                             </el-table-column>
                         </el-table>
@@ -252,6 +256,7 @@
                         <el-pagination
                             background
                             align="center"
+                            style="margin-top: 20px;"
                             layout="prev, pager, next, jumper"
                             :total="this.totalSoftwareLogData"
                             @current-change="handleCurrentChange"
@@ -265,8 +270,8 @@
                         <div style="padding: 20px; text-align: center;">
                         <p style="font-size: 17px; color: #666; margin-bottom: 20px;">请选择要进行的操作</p>
                         </div>
-                        <el-button type="primary" @click="viewContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; margin-top: 30px; margin-left: 50px">查看日志</el-button>
-                        <el-button type="success" @click="downloadContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; ">下载日志</el-button>
+                        <el-button type="success" @click="viewContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; margin-top: 30px; margin-left: 50px">查看日志</el-button>
+                        <el-button type="primary" @click="downloadContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; ">下载日志</el-button>
                     </el-dialog>
 
                     <!-- 分页条 -->
@@ -927,7 +932,6 @@ export default{
 
         // 打开软件运行态log的对话框
         openSoftwareLogDia(row){
-            this.softwareLogDiavisible = true
             // 将该容器实例的podName和namespace暂时保存下来
             this.tempContainerData.podName = row.podName
             this.tempContainerData.namespace = row.namespace
@@ -942,15 +946,16 @@ export default{
                 }).then((result) => {
                     console.log(result)
                     if(result.data.data.content != null){
-                        this.originSoftwareLogData = result.data.data.content
+                        this.softwareLogData2 = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.softwareLogData2 = this.originSoftwareLogData.map(item => {
-                            return {
-                                fileName: item
-                            };
-                        });
+                        // this.softwareLogData2 = this.originSoftwareLogData.map(item => {
+                        //     return {
+                        //         fileName: item
+                        //     };
+                        // });
                     }
                     this.totalSoftwareLogData = result.data.data.totalElements // 获得总条数
+                    this.softwareLogDiavisible = true
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1167,13 +1172,13 @@ export default{
                 }).then((result) => {
                     console.log(result)
                     if(result.data.data.content != null){
-                        this.originSoftwareLogData = result.data.data.content
+                        this.softwareLogData2 = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.softwareLogData2 = this.originSoftwareLogData.map(item => {
-                            return {
-                                fileName: item
-                            };
-                        });
+                        // this.softwareLogData2 = this.originSoftwareLogData.map(item => {
+                        //     return {
+                        //         fileName: item
+                        //     };
+                        // });
                     }
                     this.totalSoftwareLogData = result.data.data.totalElements // 获得总条数
                 }).catch(error => {

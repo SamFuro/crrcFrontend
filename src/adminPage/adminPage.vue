@@ -302,7 +302,7 @@
                     <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
                     <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
                     <el-table-column prop="tags" label="标签" align="center"></el-table-column>
-                    <el-table-column prop="pullCount" label="pullCount" align="center"></el-table-column>
+                    <el-table-column prop="pullCount" label="使用次数" align="center"></el-table-column>
                     <el-table-column prop="creationTime" label="创建时间" align="center">
                         <template #default="scope">
                             {{ formatTime(scope.row.creationTime) }}
@@ -342,8 +342,15 @@
             <el-main v-if="mainValue == 6">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="containerSearchForm" align="center" ref="containerSearchForm" :rules="containerRules">
-                    <el-form-item label="命名空间" style="margin-left: 30px;" prop="namespace">
-                        <el-input v-model="containerSearchForm.namespace" placeholder="请输入内容"></el-input>
+                    <el-form-item label="公司" style="margin-left: 30px;" prop="namespace">
+                        <el-select v-model="containerSearchForm.namespace" placeholder="公司">
+                            <el-option
+                            v-for="item in companyOptions"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                     <el-form-item label="用户名" style="margin-left: 30px;" prop="username">
                         <el-input v-model="containerSearchForm.username" placeholder="请输入内容"></el-input>
@@ -359,21 +366,21 @@
                 </el-form>
                 <!-- 内容表格 -->
                 <el-table :data="containerData" border key="containerDataTable" @selection-change="containerSelectionChange">
-                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
-                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
-                    <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
                     <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
                     <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                     <el-table-column prop="createTime" label="创建时间" align="center">
                         <template #default="scope">
                             {{ formatTime(scope.row.createTime) }}
                         </template>
                     </el-table-column>
                     <!-- Log相关按钮 包括软件log和容器log的查看与下载 -->
-                    <el-table-column label="Log" align="center">
+                    <el-table-column label="日志" align="center" width="200px">
                         <template slot-scope="scope">
-                            <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件log</el-button>
-                            <el-button size="mini" type="danger" @click="openContainerLogDia(scope.row)">容器log</el-button>
+                            <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件日志</el-button>
+                            <el-button size="mini" type="danger" @click="openContainerLogDia(scope.row)">容器日志</el-button>
                         </template>
                     </el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
@@ -384,11 +391,17 @@
                 <el-dialog title="软件运行态日志" :visible.sync="softwareLogDiavisible" v-if="softwareLogDiavisible">
                     <el-table :data="softwareLogData" key="softwareLogDataTable">
                         <el-table-column label="日志名称" prop="fileName" align="center"></el-table-column>
+                        <el-table-column label="更新时间" prop="updateTime" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.updateTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="server" prop="server" align="center"></el-table-column>
                         <!-- 操作按钮 查看&下载 -->
                         <el-table-column label="操作" align="center">
                             <template slot-scope="scope">
                                 <el-button size="mini" type="success" @click="viewSoftwareLog(scope.row)">查看</el-button>
-                                <el-button size="mini" type="danger" @click="downloadSoftwareLog(scope.row)">下载</el-button>
+                                <el-button size="mini" type="primary" @click="downloadSoftwareLog(scope.row)">下载</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -410,8 +423,8 @@
                     <div style="padding: 20px; text-align: center;">
                     <p style="font-size: 17px; color: #666; margin-bottom: 20px;">请选择要进行的操作</p>
                     </div>
-                    <el-button type="primary" @click="viewContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; margin-top: 30px; margin-left: 50px">查看日志</el-button>
-                    <el-button type="success" @click="downloadContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; ">下载日志</el-button>
+                    <el-button type="success" @click="viewContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; margin-top: 30px; margin-left: 50px">查看日志</el-button>
+                    <el-button type="primary" @click="downloadContainerLog" style="width: 120px; margin: 0 10px; border-radius: 5px; ">下载日志</el-button>
                 </el-dialog>
 
                 <!-- 分页条 -->
@@ -429,29 +442,33 @@
             <!-- 日志管理主页面 -->
             <el-main v-if="mainValue == 7">
                 <!-- 查询功能 -->
-                <!-- <el-form :inline="true" :model="softwareLogSearchForm" align="center" ref="softwareLogSearchForm" :rules="logRules">
-                    <el-form-item label="公司名称" prop="searchCompanyName" style="margin-left: 30px;">
-                        <el-input v-model="softwareLogSearchForm.searchCompanyName" placeholder="请输入内容"></el-input>
+                <el-form :inline="true" :model="historyContainerSearchForm" align="center" ref="historyContainerSearchForm" :rules="historyContainerRules">
+                    <el-form-item label="公司" style="margin-left: 30px;" prop="namespace">
+                        <el-select v-model="historyContainerSearchForm.namespace" placeholder="公司">
+                            <el-option
+                            v-for="item in companyOptions"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
-                    <el-form-item label="用户名" prop="searchUsername" style="margin-left: 30px;">
-                        <el-input v-model="softwareLogSearchForm.searchUsername" placeholder="请输入内容"></el-input>
-                    </el-form-item>
-                    <el-form-item label="容器名称" prop="searchContainerName" style="margin-left: 30px;">
-                        <el-input v-model="softwareLogSearchForm.searchContainerName" placeholder="请输入内容"></el-input>
+                    <el-form-item label="用户名" style="margin-left: 30px;" prop="username">
+                        <el-input v-model="historyContainerSearchForm.username" placeholder="请输入内容"></el-input>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="searchSoftwareLog">查询</el-button>
-                        <el-button type="danger" @click="cancelSearchSoftwareLog">取消</el-button>
+                        <el-button type="primary" @click="searchHistoryContainer">查询</el-button>
+                        <el-button type="danger" @click="cancelSearchHistoryContainer">取消</el-button>
                     </el-form-item>
-                </el-form> -->
+                </el-form>
 
                 <!-- 内容表格 -->
                 <el-table :data="historyContainerData" border key="historyContainerData">
-                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
-                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
-                    <el-table-column prop="namespace" label="命名空间" align="center"></el-table-column>
                     <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
                     <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
                     <el-table-column prop="createTime" label="创建时间" align="center">
                         <template #default="scope">
                             {{ formatTime(scope.row.createTime) }}
@@ -468,21 +485,31 @@
 
                 <!-- 历史容器实例界面 软件log dialog -->
                 <el-dialog title="软件运行态日志" :visible.sync="historSoftwareLogDiavisible" v-if="historSoftwareLogDiavisible">
-                    <el-table :data="historySoftwareLogData" key="historySoftwareLogData">
+                    <el-table :data="historySoftwareLogData" key="historySoftwareLogData" @selection-change="historySoftwareLogSelectionChange">
                         <el-table-column label="日志名称" prop="fileName" align="center"></el-table-column>
+                        <el-table-column label="更新时间" prop="updateTime" align="center" width="200px">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.updateTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="server" prop="server" align="center"></el-table-column>
                         <!-- 操作按钮 查看&下载&删除 -->
-                        <el-table-column label="查看内容" align="center">
+                        <el-table-column label="查看内容" align="center" width="150px">
                             <template slot-scope="scope">
                                 <el-button size="mini" type="success" @click="viewSoftwareLog(scope.row)">查看</el-button>
-                                <el-button size="mini" type="danger" @click="downloadSoftwareLog(scope.row)">下载</el-button>
+                                <el-button size="mini" type="primary" @click="downloadSoftwareLog(scope.row)">下载</el-button>
                             </template>
                         </el-table-column>
-                        <el-table-column label="删除操作" align="center">
+                        <!-- <el-table-column label="删除操作" align="center">
                             <template slot-scope="scope">
-                                <el-button size="mini" type="danger"">删除</el-button>
+                                <el-button size="mini" type="danger" @click="deleteHistorySoftwareLog(scope.row)">删除</el-button>
                             </template>
-                        </el-table-column>
+                        </el-table-column> -->
+                        <el-table-column type="selection" align="center" width="55"></el-table-column>
                     </el-table>
+                    <span>
+                        <el-button type="danger" size="mini" @click="deleteHistorySoftwareLog" style="margin-left: 670px; margin-top:20px">删除</el-button>
+                    </span>
                     <!-- 分页条 -->
                     <el-pagination
                         background
@@ -531,6 +558,7 @@ export default{
             selectedUserList: [], // 选中的用户列表
             selectedImageList: [], // 选中的镜像列表
             selectedContainerList: [], // 选中的容器实例列表
+            selectedHistorySoftwareLog: [], // 选中的历史容器实例软件log列表
             originSoftwareLogData: [], // 初始软件运行态log数据（纯数组形式）
             softwareLogData: [], // 处理后软件log数据（如log.txt testlog.txt等）
             historyOriginSoftwareLogData: [], // （历史容器实例）初始软件运行态log数据（纯数组形式）
@@ -595,6 +623,12 @@ export default{
                 username: "", // 用户名
             },
 
+            // 历史容器实例管理搜索功能中的值
+            historyContainerSearchForm: {
+                namespace: "", // 命名空间
+                username: "", // 用户名
+            },
+
             // 更改用户信息时，选中的用户的值
             editUserDataForm:{
                 username: "",
@@ -639,6 +673,11 @@ export default{
             },
             // 容器实例table tules
             containerRules:{
+                namespace: [{ required: false, trigger:"change"}],
+                username: [{ required: false, trigger:"change"}],
+            },
+            // 历史容器实例table tules
+            historyContainerRules:{
                 namespace: [{ required: false, trigger:"change"}],
                 username: [{ required: false, trigger:"change"}],
             },
@@ -922,6 +961,57 @@ export default{
             }
         },
 
+        // 查询历史容器实例
+        searchHistoryContainer:function(){
+            this.currentPage = 1;
+            // 调用接口查询
+            axios({
+                method: 'post',
+                url: 'api/container/list?' + "namespace=" + "page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+                data: {
+                    "namespace": this.historyContainerSearchForm.namespace,
+                    "username": this.historyContainerSearchForm.username,
+                    "running": "0"
+                },
+            }).then((result) => {
+                console.log(result)
+                this.historyContainerData = result.data.data.records
+                this.totalHistoryContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
+        // 取消查询，显示所有历史容器实例数据
+        cancelSearchHistoryContainer:function(){
+            this.currentPage = 1;
+            this.resetForm('historyContainerSearchForm');
+            // 获取所有容器实例信息
+            axios({
+                method: 'post',
+                url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                headers: {
+                    'content-Type' : "application/json",
+                    "Authorization": `${sessionStorage.getItem('adminToken')}`
+                },
+                data: {
+                    "namespace": "",
+                    "username": "", 
+                    "running": "0",
+                }
+            }).then((result) => {
+                console.log(result)
+                this.historyContainerData = result.data.data.records
+                this.totalHistoryContainerData = result.data.data.total // 获取总条数
+            }).catch(error => {
+                this.handleError(error)
+            });
+        },
+
         // // 查询软件运行态log
         // searchSoftwareLog:function(){
         //     axios({
@@ -1159,6 +1249,15 @@ export default{
             }));
         },
 
+        // 获取历史容器实例页面中软件log选中项
+        historySoftwareLogSelectionChange(val) {
+            this.selectedHistorySoftwareLog = val.map(row => ({
+                fileName: row.fileName,
+                namespace: this.tempContainerData.namespace,
+                podName: this.tempContainerData.podName,
+            }));
+        },
+
         // 用户审批页面
         changeMainTo1:function(){
             this.mainValue = 1;
@@ -1310,7 +1409,7 @@ export default{
         changeMainTo7:function() {
             this.mainValue = 7
             this.currentPage = 1
-            // 获取所有容器实例信息
+            // 获取所有历史容器实例信息
             axios({
                 method: 'post',
                 url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -1409,25 +1508,26 @@ export default{
                     data: this.selectedUserList,
                 }).then((result) => {
                     console.log(result)
-                }).catch(error => {
-                    this.handleError(error)
-                });
-                // 弹窗提示
-                this.$message.success("审批成功！");
-                // 获取待审批用户信息
-                axios({
-                    method: 'post',
-                    url: 'api/main/list',
-                    headers: {
-                        'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('adminToken')}`
-                    },
-                    data: {
-                        "status": 0,
-                    }
-                }).then((result) => {
-                    console.log(result)
-                    this.verifyUserList = result.data.data.records
+                    // 弹窗提示
+                    this.$message.success("审批成功！");
+                    // 获取待审批用户信息
+                    axios({
+                        method: 'post',
+                        url: 'api/main/list',
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        data: {
+                            "status": 0,
+                        }
+                    }).then((result) => {
+                        console.log(result)
+                        this.verifyUserList = result.data.data.records
+                        this.totalVerifyUserData = result.data.data.total // 获得总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -1450,28 +1550,29 @@ export default{
                     data: this.selectedUserList,
                 }).then((result) => {
                     console.log(result)
+                    // 弹窗提示
+                    this.$message.success("审批成功！");
+                    // 获取待审批用户信息
+                    axios({
+                        method: 'post',
+                        url: 'api/main/list',
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        data: {
+                            "status": 0,
+                        }
+                    }).then((result) => {
+                        console.log(result)
+                        this.verifyUserList = result.data.data.records
+                        this.totalVerifyUserData = result.data.data.total // 获得总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
                 }).catch(error => {
                     this.handleError(error)
                 });
-                // 获取待审批用户信息
-                axios({
-                    method: 'post',
-                    url: 'api/main/list',
-                    headers: {
-                        'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('adminToken')}`
-                    },
-                    data: {
-                        "status": 0,
-                    }
-                }).then((result) => {
-                    console.log(result)
-                    this.verifyUserList = result.data.data.records
-                }).catch(error => {
-                    this.handleError(error)
-                });
-                // 弹窗提示
-                this.$message.success("审批成功！");
             }
         },
 
@@ -1495,32 +1596,33 @@ export default{
                     data: this.selectedImageList,
                 }).then((result) => {
                     console.log(result)
+                    // 弹窗提示
+                    this.$message.success("审批成功！");
+                    // 获取待审批用户信息
+                    this.currentPage = 1
+                    axios({
+                        method: 'post',
+                        url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        data: {
+                            "status": 0,
+                        }
+                    }).then((result) => {
+                        console.log(result)
+                        this.verifyImageList = result.data.data.records
+                        this.totalVerifyImageData = result.data.data.total // 获得总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
                 }).catch(error => {
                     this.handleError(error)
                 });
-                // 获取待审批用户信息
-                this.currentPage = 1
-                axios({
-                    method: 'post',
-                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
-                    headers: {
-                        'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('adminToken')}`
-                    },
-                    data: {
-                        "status": 0,
-                    }
-                }).then((result) => {
-                    console.log(result)
-                    this.verifyImageList = result.data.data.records
-                }).catch(error => {
-                    this.handleError(error)
-                });
-                // 弹窗提示
-                this.$message.success("审批成功！");
+                
+                
             }
-            
-            console.log("选中的镜像：", this.selectedImageList)
         },
 
         // 镜像审批不通过
@@ -1543,35 +1645,37 @@ export default{
                     data: this.selectedImageList,
                 }).then((result) => {
                     console.log(result)
+                    // 弹窗提示
+                    this.$message.success("审批成功！");
+                    // 获取待审批用户信息
+                    this.currentPage = 1
+                    axios({
+                        method: 'post',
+                        url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        data: {
+                            "status": 0,
+                        }
+                    }).then((result) => {
+                        console.log(result)
+                        this.verifyImageList = result.data.data.records
+                        this.totalVerifyImageData = result.data.data.total // 获得总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
                 }).catch(error => {
                     this.handleError(error)
                 });
-                // 获取待审批用户信息
-                this.currentPage = 1
-                axios({
-                    method: 'post',
-                    url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
-                    headers: {
-                        'content-Type' : "application/json",
-                        "Authorization": `${sessionStorage.getItem('adminToken')}`
-                    },
-                    data: {
-                        "status": 0,
-                    }
-                }).then((result) => {
-                    console.log(result)
-                    this.verifyImageList = result.data.data.records
-                }).catch(error => {
-                    this.handleError(error)
-                });
-                // 弹窗提示
-                this.$message.success("审批成功！");
+                
+                
             }
         },
 
         // 打开历史容器实力页面软件运行态log的对话框
         openHistorySoftwareLogDia(row) {
-            this.historSoftwareLogDiavisible = true
             // 将该容器实例的podName和namespace暂时保存下来
             this.tempContainerData.podName = row.podName
             this.tempContainerData.namespace = row.namespace
@@ -1586,24 +1690,66 @@ export default{
                 },
             }).then((result) => {
                 console.log(result)
-                if(result.data.data.content != null){
-                    this.historyOriginSoftwareLogData = result.data.data.content
+                if(result.data.data.content != null) {
+                    this.historySoftwareLogData = result.data.data.content
                     // 转换格式 方便在el-table中显示
-                    this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
-                        return {
-                            fileName: item
-                        };
-                    });
+                    // this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
+                    //     return {
+                    //         fileName: item
+                    //     };
+                    // });
                 }
                 this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
+                this.historSoftwareLogDiavisible = true
             }).catch(error => {
                 this.handleError(error)
             });
         },
 
+        // 删除历史容器实例的日志
+        deleteHistorySoftwareLog() {
+            console.log(this.selectedHistorySoftwareLog)
+            if(this.selectedHistorySoftwareLog == "") {
+                this.$message("未选择任何日志！")
+            }
+            else {
+                // 调用接口删除日志
+                axios({
+                    method: 'post',
+                    url: 'api/file/deleteLogs',
+                    headers: {
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: this.selectedHistorySoftwareLog
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("日志删除成功！")
+                    // 调用接口获取删除后的日志列表
+                    this.currentPage = 0
+                    axios({
+                        method: 'get',
+                        url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                    }).then((result) => {
+                        console.log(result)
+                        if(result.data.data.content != null) {
+                            this.historySoftwareLogData = result.data.data.content
+                        }
+                        this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
+                        this.historSoftwareLogDiavisible = true
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+        },
+
         // 打开软件运行态log的对话框
         openSoftwareLogDia(row){
-            this.softwareLogDiavisible = true
             // 将该容器实例的podName和namespace暂时保存下来
             this.tempContainerData.podName = row.podName
             this.tempContainerData.namespace = row.namespace
@@ -1618,19 +1764,21 @@ export default{
                     },
                 }).then((result) => {
                     console.log(result)
-                    if(result.data.data.content != null){
-                        this.originSoftwareLogData = result.data.data.content
-                        // 转换格式 方便在el-table中显示
-                        this.softwareLogData = this.originSoftwareLogData.map(item => {
-                            return {
-                                fileName: item
-                            };
-                        });
+                    if(result.data.data.content != null) {
+                        this.softwareLogData = result.data.data.content
+                        // // 转换格式 方便在el-table中显示
+                        // this.softwareLogData = this.originSoftwareLogData.map(item => {
+                        //     return {
+                        //         fileName: item
+                        //     };
+                        // });
                     }
                     this.totalSoftwareLogData = result.data.data.totalElements // 获得总条数
+                    this.softwareLogDiavisible = true
                 }).catch(error => {
                     this.handleError(error)
                 });
+            
         },
 
         // 打开容器实例log的对话框
@@ -1728,7 +1876,7 @@ export default{
             });
         }, 
 
-        //点击按钮切换页面
+        // 点击按钮切换页面
         handleCurrentChange(currentPage) {
             this.currentPage = currentPage; //每次点击分页按钮，当前页发生变化
             // 如果当前页面是用户审批页面
@@ -1889,14 +2037,14 @@ export default{
                     },
                 }).then((result) => {
                     console.log(result)
-                    if(result.data.data.content != null){
-                        this.originSoftwareLogData = result.data.data.content
+                    if(result.data.data.content != null) {
+                        this.softwareLogData = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.softwareLogData = this.originSoftwareLogData.map(item => {
-                            return {
-                                fileName: item
-                            };
-                        });
+                        // this.softwareLogData = this.originSoftwareLogData.map(item => {
+                        //     return {
+                        //         fileName: item
+                        //     };
+                        // });
                     }
                     this.totalSoftwareLogData = result.data.data.totalElements // 获得总条数
                 }).catch(error => {
@@ -1915,8 +2063,8 @@ export default{
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
                     data: {
-                        "namespace": "",
-                        "username": "", 
+                        "namespace": this.historyContainerSearchForm.namespace,
+                        "username": this.historyContainerSearchForm.username, 
                         "running": "0",
                     }
                 }).then((result) => {
@@ -1940,13 +2088,13 @@ export default{
                 }).then((result) => {
                     console.log(result)
                     if(result.data.data.content != null){
-                        this.historyOriginSoftwareLogData = result.data.data.content
+                        this.historySoftwareLogData = result.data.data.content
                         // 转换格式 方便在el-table中显示
-                        this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
-                            return {
-                                fileName: item
-                            };
-                        });
+                        // this.historySoftwareLogData = this.historyOriginSoftwareLogData.map(item => {
+                        //     return {
+                        //         fileName: item
+                        //     };
+                        // });
                     }
                     this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
                 }).catch(error => {
