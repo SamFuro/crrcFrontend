@@ -30,10 +30,10 @@
         <el-form-item label="公司" prop="companyId">
           <el-select v-model="userInfo.companyId" placeholder="请选择">
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
+              v-for="item in companyOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -91,7 +91,8 @@ export default {
         phone: [{ required: true, message: "手机号码不能为空！", trigger: "blur" }],
         companyId: [{required: true, message: "请选择隶属公司！", trigger: "change" }],
       },
-      options: [{
+
+      companyOptions: [{
           value: '1',
           label: '公司1'
         }, {
@@ -101,12 +102,27 @@ export default {
           value: '3',
           label: '公司3'
         }],
+
         companyId: '',
         //设置秘钥和秘钥偏移量
         SECRET_KEY: CryptoJS.enc.Utf8.parse("ul29s9b5l1x8sqo7"),
         SECRET_IV: CryptoJS.enc.Utf8.parse("d8g65df9vc6s23df"),
     };
   },
+  mounted(){
+    // 获取公司列表
+    axios({
+        method: 'get',
+        url: 'api/company/list/notLogin?size=100',
+      }).then((result) => {
+          console.log(result.data)
+          this.companyOptions = result.data.data.records
+          console.log("公司列表：" ,this.companyOptions)
+      }).catch(error => {
+          this.handleError(error)
+      })
+  },
+
   methods: {
     // 密码传输过程 数据加密
     encrypt(word) {
@@ -153,29 +169,18 @@ export default {
     },
     // 错误处理
     handleError(error) {
-      if (error.response) {
-          // error.response包含了服务器响应的详细信息
-          const statusCode = error.response.status;
-          const errorMessage = error.response.data.msg;
-          // 根据不同的错误代码，显示不同的错误消息
-          switch (statusCode) {
-              case 400:
-                  alert(`400: ${errorMessage}`);
-                  break;
-              case 404:
-                  alert(`404: ${errorMessage}`);
-                  break;
-              case 500:
-                  alert(`服务器错误，请稍后重试。`);
-                  break;
-              default:
-                  alert(`未知错误: ${errorMessage}`);
+        if (error.response) {
+            // error.response包含了服务器响应的详细信息
+            const statusCode = error.response.status;
+            const errorMessage = error.response.data.error;
+            // 根据不同的错误代码，显示不同的错误消息           
+            this.$message.error(`${statusCode}: ${errorMessage}`);
+            } else {
+                // 其他错误（例如网络问题）
+                this.$message.error(`${error}`);
             }
-        } else {
-            // 其他错误（例如网络问题）
-            alert('网络错误，请检查你的连接。');
-        }
-      },
+    },
+
     // 重置表单数据
     resetForm(formName) {
       this.$refs[formName].resetFields();
