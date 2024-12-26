@@ -1,6 +1,6 @@
 <template>
   <div class="registerBackground">
-    <el-image style="margin-left: 5px; margin-top: 5px; width: 260px;"  :src= "require('../images/logo.png')"></el-image>
+    <!-- <el-image style="margin-left: 5px; margin-top: 5px; width: 260px;"  :src= "require('../images/logo.png')"></el-image> -->
     <el-card class="box-card">
       <h2>登录</h2>
       <el-form
@@ -40,9 +40,9 @@
       <div class="btnGroup">
         <el-button type="danger" @click="submitForm">登录</el-button>
         <el-button @click="resetForm('userInfo')">重置</el-button>
-        <router-link to="/Register">
+        <!-- <router-link to="/Register">
           <el-button style="margin-left:10px">注册</el-button>
-        </router-link>
+        </router-link> -->
       </div>
     </el-card>
   </div>

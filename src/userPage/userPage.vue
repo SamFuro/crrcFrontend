@@ -4,13 +4,16 @@
         <el-header style="font-size: 37px; background-color: rgb(199, 0, 25); color: white;">用户界面</el-header>
         <el-container>
             <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-                <el-menu :default-openeds="['1']">
+                <el-menu :default-openeds="['1', '1-2']">
                     <el-submenu index="1">
                         <template slot="title"><i class="el-icon-message"></i>信息管理</template>
                         <el-menu-item index="1-1" @click="changeMainTo1">个人信息</el-menu-item>
-                        <!-- <el-menu-item index="1-2" @click="changeMainTo2">个人日志</el-menu-item> -->
-                        <el-menu-item index="1-3" @click="changeMainTo3">镜像信息</el-menu-item>
-                        <el-menu-item index="1-4" @click="changeMainTo4">容器实例信息</el-menu-item>
+                        <el-submenu index="1-2">
+                            <template slot="title">镜像信息</template>
+                            <el-menu-item index="1-2-1" @click="changeMainTo2">上传镜像</el-menu-item>
+                            <el-menu-item index="1-2-2" @click="changeMainTo3">查看信息</el-menu-item>
+                        </el-submenu>
+                        <el-menu-item index="1-3" @click="changeMainTo4">容器实例信息</el-menu-item>
                         <!-- <el-menu-item index="1-5" @click="changeMainTo5">软件运行态log信息</el-menu-item> -->
                     </el-submenu>
                 </el-menu>
@@ -35,9 +38,9 @@
             <!-- 用户信息修改dialog -->
             <el-dialog title="编辑用户信息" :visible.sync="userDataChangeDiaVisible">
                 <el-form :model="editUserDataForm">
-                    <el-form-item label="姓名" :label-width='"100px"'>
+                    <!-- <el-form-item label="姓名" :label-width='"100px"'>
                         <el-input v-model="editUserDataForm.name" autocomplete="off" width="200px"></el-input>
-                    </el-form-item>
+                    </el-form-item> -->
                     <el-form-item label="电话" :label-width='"100px"'>
                         <el-input v-model="editUserDataForm.phone" autocomplete="off" width="200px"></el-input>
                     </el-form-item>
@@ -52,10 +55,10 @@
             <el-dialog title="修改密码" :visible.sync="userPasswordChangeDiaVisible">
                 <el-form :model="editUserDataForm">
                     <el-form-item label="新的密码" :label-width='"150px"'>
-                        <el-input v-model="editUserDataForm.password" autocomplete="off"></el-input>
+                        <el-input v-model="editUserDataForm.password" show-password autocomplete="off"></el-input>
                     </el-form-item>
                     <el-form-item label="请再次输入新的密码" :label-width='"150px"'>
-                        <el-input v-model="editUserDataForm.passConfirm" autocomplete="off"></el-input>
+                        <el-input v-model="editUserDataForm.passConfirm" show-password autocomplete="off"></el-input>
                     </el-form-item>
                 </el-form>
                 <div slot="footer">
@@ -451,16 +454,18 @@ export default{
         });
     },
     methods:{
-        // 个人信息界面
+        // 个人信息页面
         changeMainTo1:function(){
             this.mainValue = 1;
         },
 
-        // 个人日志界面
+        // 上传镜像页面
         changeMainTo2:function(){
             this.mainValue = 2;
+
         },
-        // 镜像信息页面
+
+        // 镜像信息查看页面
         changeMainTo3:function(){
             this.mainValue = 3;
             this.currentPage = 1;
@@ -537,10 +542,7 @@ export default{
 
         // 更改用户数据
         changeUserData:function(){
-            if(this.editUserDataForm.name == ''){
-                this.$message.error("姓名为空！")
-            }
-            else if(this.editUserDataForm.phone == ''){
+            if(this.editUserDataForm.phone == ''){
                 this.$message.error("电话为空！")
             }
             else {
