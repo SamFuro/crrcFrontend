@@ -17,9 +17,9 @@
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input
-            type="password"
             v-model="userInfo.password"
             autocomplete="off"
+            show-password
           ></el-input>
         </el-form-item>
 
@@ -93,7 +93,13 @@ export default {
     },
     // 点击登录按钮触发
     submitForm() {
-      if (this.userInfo.inputCode == '') {
+      if(this.userInfo.username == '') {
+        this.$message.error("请输入用户名！");
+      }
+      else if (this.userInfo.password == '') {
+        this.$message.error("请输入密码！");
+      }
+      else if (this.userInfo.inputCode == '') {
         this.$message.error("请输入验证码！");
       }
       else if(this.userInfo.inputCode.toLowerCase() != this.code.toLowerCase()){

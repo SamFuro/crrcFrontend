@@ -8,7 +8,7 @@
                     <el-submenu index="1">
                         <template slot="title"><i class="el-icon-thumb"></i>审批管理</template>
                         <el-menu-item-group>
-                            <el-menu-item index="1-1" @click="changeMainTo1">用户审批</el-menu-item>
+                            <!-- <el-menu-item index="1-1" @click="changeMainTo1">用户审批</el-menu-item> -->
                             <el-menu-item index="1-2" @click="changeMainTo2">镜像审批</el-menu-item>
                         </el-menu-item-group>
                     </el-submenu>
@@ -16,10 +16,10 @@
                         <template slot="title"><i class="el-icon-s-order"></i>信息管理</template>
                         <el-menu-item-group>
                             <el-menu-item index="2-1" @click="changeMainTo3">用户管理</el-menu-item>
-                            <el-menu-item index="2-2" @click="changeMainTo4">租户管理</el-menu-item>
+                            <el-menu-item index="2-2" @click="changeMainTo4">组织机构管理</el-menu-item>
                             <el-menu-item index="2-3" @click="changeMainTo5">镜像管理</el-menu-item>
                             <el-menu-item index="2-4" @click="changeMainTo6">容器实例管理</el-menu-item>
-                            <el-menu-item index="2-5" @click="changeMainTo7">日志管理</el-menu-item>
+                            <el-menu-item index="2-5" @click="changeMainTo7">历史日志管理</el-menu-item>
                             <!-- <el-menu-item index="2-5" @click="changeMainTo7">软件运行态log管理</el-menu-item> -->
                         </el-menu-item-group>
                     </el-submenu>
@@ -27,40 +27,41 @@
             </el-aside>
 
             <!-- 用户审批主页面 -->
-                <el-main v-if="mainValue == 1">
-                    <!-- 待审批用户表格内容 -->
-                    <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyUserTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
-                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-                        <el-table-column prop="name" label="姓名" align="center"></el-table-column>
-                        <el-table-column prop="phone" label="电话" align="center"></el-table-column>
-                        <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
-                        <el-table-column prop="status" label="状态" align="center" :formatter="formatStatus"></el-table-column>
-                        <el-table-column type="selection" align="center" width="55"></el-table-column>
-                    </el-table>
-                    <!-- 通过 & 不通过 按钮 -->
-                     <el-row style="margin-left: 1050px; margin-top: 20px">
-                        <el-button type="danger" @click="rejectUser">不通过</el-button>
-                        <el-button type="primary" @click="approveUser" style="margin-left: 15px;">通过</el-button>
-                    </el-row>
-                    <!-- 分页条 -->
-                    <el-pagination
-                        background
-                        align="center"
-                        layout="prev, pager, next, jumper"
-                        :total="this.totalVerifyUserData"
-                        @current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-size="pageSize">
-                    </el-pagination>
-                    
-                </el-main>
+            <el-main v-if="mainValue == 1">
+                <!-- 待审批用户表格内容 -->
+                <el-table :data="verifyUserList" border @selection-change="userVerifySelectionChange" key="verifyUserTable" ref="verifyUserList" style="width: 1200px; margin-left: 30px">
+                    <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                    <el-table-column prop="name" label="姓名" align="center"></el-table-column>
+                    <el-table-column prop="phone" label="电话" align="center"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
+                    <el-table-column prop="status" label="状态" align="center" :formatter="formatUserStatus"></el-table-column>
+                    <el-table-column type="selection" align="center" width="55"></el-table-column>
+                </el-table>
+                <!-- 通过 & 不通过 按钮 -->
+                    <el-row style="margin-left: 1050px; margin-top: 20px">
+                    <el-button type="danger" @click="rejectUser">不通过</el-button>
+                    <el-button type="primary" @click="approveUser" style="margin-left: 15px;">通过</el-button>
+                </el-row>
+                <!-- 分页条 -->
+                <el-pagination
+                    background
+                    align="center"
+                    :hide-on-single-page = true
+                    layout="prev, pager, next, jumper"
+                    :total="this.totalVerifyUserData"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize">
+                </el-pagination>
+                
+            </el-main>
 
             <!-- 镜像审批主页面 -->
             <el-main v-if="mainValue == 2">
                     <!-- 待审批用户表格内容 -->
                     <el-table :data="verifyImageList" border @selection-change="imageVerifySelectionChange" key="verifyImageTable" ref="verifyImageList" style="width: 1200px; margin-left: 30px">
                         <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
-                        <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
                         <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
                         <el-table-column prop="tags" label="标签" align="center"></el-table-column>
                         <el-table-column prop="creationTime" label="创建时间" align="center">
@@ -81,6 +82,7 @@
                     <el-pagination
                         background
                         align="center"
+                        :hide-on-single-page = true
                         layout="prev, pager, next, jumper"
                         :total="this.totalVerifyImageData"
                         @current-change="handleCurrentChange"
@@ -88,187 +90,246 @@
                         :page-size="pageSize">
                     </el-pagination>
 
-                </el-main>
+            </el-main>
             
             <!-- 用户管理主页面 -->
-                <el-main v-if="mainValue == 3">
-                    <!-- 查询功能 -->
-                    <el-form :inline="true" :model="userSearchForm" align="center" ref="userSearchForm" :rules="userRules">
-                        <!-- <el-form-item label="姓名">
-                            <el-input v-model="userSearchForm.searchName" placeholder="姓名"></el-input>
-                        </el-form-item> -->
-                        <el-form-item label="公司" style="margin-left: 30px;" prop="searchCompanyName">
-                            <el-select v-model="userSearchForm.searchCompanyName" placeholder="公司">
+            <el-main v-if="mainValue == 3">
+                <!-- 查询功能 -->
+                <el-form :inline="true" :model="userSearchForm" align="center" ref="userSearchForm" :rules="userRules">
+                    <!-- <el-form-item label="姓名">
+                        <el-input v-model="userSearchForm.searchName" placeholder="姓名"></el-input>
+                    </el-form-item> -->
+                    <el-form-item label="组织机构" style="margin-left: 30px;" prop="searchCompanyName">
+                        <el-select v-model="userSearchForm.searchCompanyName" placeholder="组织机构">
+                            <el-option
+                            v-for="item in companyOptions"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.name">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="状态" style="margin-left: 30px;" prop="searchStatus">
+                        <el-select v-model="userSearchForm.searchStatus" placeholder="状态">
+                            <el-option label="正常" value="0"></el-option>
+                            <el-option label="已删除" value="1"></el-option>
+                            <el-option label="异常" value="2"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="searchUser">查询</el-button>
+                        <el-button type="danger" @click="cancleSearchUser">取消</el-button>
+                        <el-button type="primary" @click="openCreateUserDia" style="margin-left: 40px">创建用户</el-button>
+                        <!-- <el-button @click="controlPasswordColumn">{{ passwordTag }}</el-button> -->
+                    </el-form-item>
+                </el-form>
+                <!-- 内容表格 -->
+                <el-table :data="userData" border key="userDataTable" ref="userDataTable">
+                    <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                    <el-table-column label="密码" v-if="showPasswordColumn" align="center" ></el-table-column>
+                    <el-table-column prop="phone" label="电话" align="center"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
+                    <el-table-column prop="createTime" label="创建时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.createTime) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="deleteTime" label="删除时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.deleteTime) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="status" label="状态" :formatter="formatUserStatus" align="center"></el-table-column>
+                    <!-- 操作按钮 修改用户密码 -->
+                    <el-table-column label="操作" align="center">
+                        <template slot-scope="scope">
+                            <el-button type="danger" size="mini" @click="openChangeUserPasswordDia(scope.row)">修改密码</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <br>
+
+                <!-- 创建用户dialog -->
+                    <el-dialog title="创建用户" :visible.sync="createUserDiaVisible" width="400px">
+                    <el-form
+                        :model="createUserInfo"
+                        status-icon
+                        :rules="createUserRules"
+                        ref="createUserInfo"
+                        label-position="left"
+                        label-width="80px"
+                    >
+                        <el-form-item label="用户名" prop="username">
+                            <el-input v-model="createUserInfo.username"></el-input> 
+                        </el-form-item>
+                        <el-form-item label="密码" prop="password">
+                            <el-input v-model="createUserInfo.password" type="password" @input="checkPasswordStrength" show-password autocomplete="off"></el-input>
+                            <span>密码强度：<span :class="tipsColor">{{ strength }}</span></span>
+                            <!-- <el-button @click="randomPassword" style="margin-left: 20px;">随机生成</el-button> -->
+                        </el-form-item>
+                        <el-form-item label="确认密码" prop="passConfirm">
+                            <el-input v-model="createUserInfo.passConfirm" type="password" show-password autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="手机号" prop="phone">
+                            <el-input v-model="createUserInfo.phone" maxlength="11" show-word-limit></el-input>
+                        </el-form-item>
+                        <el-form-item label="组织机构" prop="companyId">
+                            <el-select v-model="createUserInfo.companyId" placeholder="请选择" style="width: 280px">
                                 <el-option
-                                v-for="item in companyOptions"
-                                :key="item.id"
-                                :label="item.name"
-                                :value="item.name">
+                                    v-for="item in companyOptions"
+                                    :key="item.id"
+                                    :label="item.name"
+                                    :value="item.id">
                                 </el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="状态" style="margin-left: 30px;" prop="searchStatus">
-                            <el-select v-model="userSearchForm.searchStatus" placeholder="状态">
-                                <el-option label="待审批" value="0"></el-option>
-                                <el-option label="审批通过" value="1"></el-option>
-                                <el-option label="审批不通过" value="2"></el-option>
-                                <el-option label="已删除" value="3"></el-option>
-                                <el-option label="异常" value="4"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" @click="searchUser">查询</el-button>
-                            <el-button type="danger" @click="cancleSearchUser">取消</el-button>
-                        </el-form-item>
                     </el-form>
-                    <!-- 内容表格 -->
-                    <el-table :data="userData" border key="userDataTable">
-                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
-                        <el-table-column prop="name" label="姓名" align="center"></el-table-column>
-                        <el-table-column prop="phone" label="电话" align="center"></el-table-column>
-                        <el-table-column prop="companyName" label="公司" align="center"></el-table-column>
-                        <el-table-column prop="createTime" label="创建时间" align="center">
-                            <template #default="scope">
-                                {{ formatTime(scope.row.createTime) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="deleteTime" label="删除时间" align="center">
-                            <template #default="scope">
-                                {{ formatTime(scope.row.deleteTime) }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column prop="status" label="状态" :formatter="formatStatus" align="center"></el-table-column>
-                        <!-- 操作按钮 编辑&删除 -->
-                        <!-- <el-table-column label="操作">
-                            <template slot-scope="scope">
-                                <el-button size="mini" @click="editUserData(scope.$index, scope.row)">编辑</el-button>
-                                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                            </template>
-                        </el-table-column> -->
-                    </el-table>
-                    <br>
+                    <div slot="footer">
+                        <el-button @click="createUserDiaVisible = false">取消</el-button>
+                        <el-button type="primary" @click="createUser">确定</el-button>
+                    </div>
+                    </el-dialog>
 
-                    <!-- 用户信息修改dialog -->
-                    <el-dialog title="编辑用户信息" :visible.sync="userDataChangeDiaVisible">
-                        <el-form :model="editUserDataForm">
-                            <el-form-item label="用户名" :label-width='"150px"'>
-                                <el-input v-model="editUserDataForm.username" autocomplete="off"></el-input>
+                    <!-- 用户密码修改dialog -->
+                    <el-dialog title="修改密码" :visible.sync="userPasswordChangeDiaVisible" width="400px">
+                        <el-form :model="editUserPasswordForm" ref="editUserPasswordForm" :rules="changeUserPasswordRules" label-width="80px">
+                            <el-form-item label="新密码" prop="password">
+                                <el-input v-model="editUserPasswordForm.password" type="password" show-password @input="checkPasswordStrength" autocomplete="off"></el-input>
+                                <span>密码强度：<span :class="tipsColor">{{ strength }}</span></span>
                             </el-form-item>
-                            <el-form-item label="姓名" :label-width='"150px"'>
-                                <el-input v-model="editUserDataForm.name" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="电话" :label-width='"150px"'>
-                                <el-input v-model="editUserDataForm.phone" autocomplete="off"></el-input>
+                            <el-form-item label="确认密码" prop="passConfirm">
+                                <el-input v-model="editUserPasswordForm.passConfirm" type="password" show-password autocomplete="off"></el-input>
                             </el-form-item>
                         </el-form>
-                        <div slot="footer" class="dialog-footer">
-                            <el-button @click="userDataChangeDiaVisible = false">取 消</el-button>
-                            <el-button type="primary" @click="changeUserData">确 定</el-button>
+                        <div slot="footer">
+                            <el-button @click="userPasswordChangeDiaVisible = false">取 消</el-button>
+                            <el-button type="primary" @click="changeUserPassword">确 定</el-button>
                         </div>
                     </el-dialog>
 
-                    <!-- 分页条 -->
-                    <el-pagination
-                        background
-                        align="center"
-                        layout="prev, pager, next, jumper"
-                        :total="this.totalUserData"
-                        @current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-size="pageSize">
-                    </el-pagination>
-                </el-main>
+                <!-- 用户信息修改dialog
+                <el-dialog title="编辑用户信息" :visible.sync="userDataChangeDiaVisible">
+                    <el-form :model="editUserDataForm">
+                        <el-form-item label="用户名" :label-width='"150px"'>
+                            <el-input v-model="editUserDataForm.username" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="姓名" :label-width='"150px"'>
+                            <el-input v-model="editUserDataForm.name" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="电话" :label-width='"150px"'>
+                            <el-input v-model="editUserDataForm.phone" autocomplete="off"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="userDataChangeDiaVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="changeUserData">确 定</el-button>
+                    </div>
+                </el-dialog> -->
+
+                <!-- 分页条 -->
+                <el-pagination
+                    background
+                    align="center"
+                    :hide-on-single-page = true
+                    layout="prev, pager, next, jumper"
+                    :total="this.totalUserData"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize">
+                </el-pagination>
+            </el-main>
                 
-            <!-- 租户管理主页面 -->
-                <el-main v-if="mainValue == 4">
-                    <!-- 查询功能 -->
-                    <el-form :inline="true" :model="companySearchForm" align="center" ref="companySearchForm" :rules="companyRules">
-                        <el-form-item label="公司名称" style="margin-left: 30px;" prop="searchCompanyName">
-                            <el-input v-model="companySearchForm.searchCompanyName"></el-input>
+            <!-- 组织机构管理主页面 -->
+            <el-main v-if="mainValue == 4">
+                <!-- 查询功能 -->
+                <el-form :inline="true" :model="companySearchForm" align="center" ref="companySearchForm" :rules="companyRules">
+                    <el-form-item label="组织机构名称" style="margin-left: 30px;" prop="searchCompanyName">
+                        <el-input v-model="companySearchForm.searchCompanyName"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="searchTenant">查询</el-button>
+                        <el-button type="danger" @click="cancelSearchTenant">取消</el-button>
+                    </el-form-item>
+                    <!-- 创建组织机构 -->
+                    <el-form-item style="margin-left: 50px">
+                        <el-button type="primary" @click="createCompanyData.name = ''; createCompanyData.cpu=''; createCompanyData.memory=''; createCompanyDiaVisible = true;">创建组织机构</el-button>
+                    </el-form-item>
+                </el-form>
+                <!-- 内容表格 -->
+                <el-table :data="companyData" border key="companyDataTable">
+                    <el-table-column prop="name" label="组织机构" align="center"></el-table-column>
+                    <el-table-column prop="cpu" label="cpu" align="center"></el-table-column>
+                    <el-table-column prop="memory" label="内存/MB" align="center"></el-table-column>
+                    <!-- 操作按钮 编辑&删除 -->
+                    <!-- <el-table-column label="操作" align="center">
+                        <template slot-scope="scope">
+                            <el-button size="mini" @click="editCompanyData(scope.$index, scope.row)">编辑</el-button>
+                            <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                        </template>
+                    </el-table-column> -->
+                </el-table>
+                <br>
+
+                <!-- 创建组织机构dialog -->
+                <el-dialog title="待创建组织机构信息" :visible.sync="createCompanyDiaVisible" width="500px">
+                    <el-form :model="createCompanyData" style="margin-left: -60px;">
+                        <el-form-item label="组织机构" :label-width='"150px"'>
+                            <el-input v-model="createCompanyData.name" autocomplete="off"></el-input>
                         </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" @click="searchTenant">查询</el-button>
-                            <el-button type="danger" @click="cancelSearchTenant">取消</el-button>
+                        <el-form-item label="cpu" :label-width='"150px"'>
+                            <el-input v-model="createCompanyData.cpu" autocomplete="off"></el-input>
                         </el-form-item>
-                        <!-- 创建租户 -->
-                        <el-form-item style="margin-left: 50px">
-                            <el-button type="primary" @click="createCompanyDiaVisible = true">创建租户</el-button>
+                        <el-form-item label="内存" :label-width='"150px"'>
+                            <el-input v-model="createCompanyData.memory" autocomplete="off"></el-input>
                         </el-form-item>
                     </el-form>
-                    <!-- 内容表格 -->
-                    <el-table :data="companyData" border key="companyDataTable">
-                        <el-table-column prop="name" label="公司名称" align="center"></el-table-column>
-                        <el-table-column prop="cpu" label="cpu" align="center"></el-table-column>
-                        <el-table-column prop="memory" label="内存" align="center"></el-table-column>
-                        <!-- 操作按钮 编辑&删除 -->
-                        <!-- <el-table-column label="操作" align="center">
-                            <template slot-scope="scope">
-                                <el-button size="mini" @click="editCompanyData(scope.$index, scope.row)">编辑</el-button>
-                                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                            </template>
-                        </el-table-column> -->
-                    </el-table>
-                    <br>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="createCompanyDiaVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="createCompany">确 定</el-button>
+                    </div>
+                </el-dialog>
 
-                    <!-- 创建租户dialog -->
-                    <el-dialog title="待创建租户信息" :visible.sync="createCompanyDiaVisible">
-                        <el-form :model="createCompanyData">
-                            <el-form-item label="公司名称" :label-width='"150px"'>
-                                <el-input v-model="createCompanyData.name" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="cpu" :label-width='"150px"'>
-                                <el-input v-model="createCompanyData.cpu" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="内存" :label-width='"150px"'>
-                                <el-input v-model="createCompanyData.memory" autocomplete="off"></el-input>
-                            </el-form-item>
-                        </el-form>
-                        <div slot="footer" class="dialog-footer">
-                            <el-button @click="createCompanyDiaVisible = false">取 消</el-button>
-                            <el-button type="primary" @click="createCompany">确 定</el-button>
-                        </div>
-                    </el-dialog>
+                <!-- 组织机构信息修改dialog -->
+                <el-dialog title="编辑组织机构信息" :visible.sync="companyDataChangeDiaVisible">
+                    <el-form :model="editCompanyDataForm">
+                        <el-form-item label="组织机构" :label-width='"150px"'>
+                            <el-input v-model="editCompanyDataForm.companyName" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="cpu" :label-width='"150px"'>
+                            <el-input v-model="editCompanyDataForm.cpu" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="内存" :label-width='"150px"'>
+                            <el-input v-model="editCompanyDataForm.memory" autocomplete="off"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="companyDataChangeDiaVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="changeCompanyData">确 定</el-button>
+                    </div>
+                </el-dialog>
 
-                    <!-- 租户信息修改dialog -->
-                    <el-dialog title="编辑租户信息" :visible.sync="companyDataChangeDiaVisible">
-                        <el-form :model="editCompanyDataForm">
-                            <el-form-item label="公司名称" :label-width='"150px"'>
-                                <el-input v-model="editCompanyDataForm.companyName" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="cpu" :label-width='"150px"'>
-                                <el-input v-model="editCompanyDataForm.cpu" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="内存" :label-width='"150px"'>
-                                <el-input v-model="editCompanyDataForm.memory" autocomplete="off"></el-input>
-                            </el-form-item>
-                        </el-form>
-                        <div slot="footer" class="dialog-footer">
-                            <el-button @click="companyDataChangeDiaVisible = false">取 消</el-button>
-                            <el-button type="primary" @click="changeCompanyData">确 定</el-button>
-                        </div>
-                    </el-dialog>
-
-                    <!-- 分页条 -->
-                    <el-pagination
-                        background
-                        align="center"
-                        layout="prev, pager, next, jumper"
-                        :total="this.totalCompanyData"
-                        @current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-size="pageSize">
-                    </el-pagination>
-                </el-main>
+                <!-- 分页条 -->
+                <el-pagination
+                    background
+                    align="center"
+                    :hide-on-single-page = true
+                    layout="prev, pager, next, jumper"
+                    :total="this.totalCompanyData"
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage"
+                    :page-size="pageSize">
+                </el-pagination>
+            </el-main>
 
             <!-- 镜像管理主页面 -->
             <el-main v-if="mainValue == 5">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="imageSearchForm" align="center" ref="imageSearchForm" :rules="imageRules">
-                    <el-form-item label="镜像名称" style="margin-left: 30px;" prop="searchImageName">
+                    <el-form-item label="镜像名称" prop="searchImageName">
                         <el-input v-model="imageSearchForm.searchImageName" placeholder="请输入内容"></el-input>
                     </el-form-item>
-                    <el-form-item label="公司" style="margin-left: 30px;" prop="searchCompanyId">
-                        <el-select v-model="imageSearchForm.searchCompanyId" placeholder="公司">
+                    <el-form-item label="组织机构" prop="searchCompanyId">
+                        <el-select v-model="imageSearchForm.searchCompanyId" placeholder="组织机构">
                             <el-option
                             v-for="item in companyOptions"
                             :key="item.id"
@@ -277,7 +338,7 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="镜像状态" style="margin-left: 30px;" prop="searchStatus">
+                    <el-form-item label="镜像状态" prop="searchStatus">
                             <el-select v-model="imageSearchForm.searchStatus" placeholder="状态">
                                 <el-option label="待审批" value="0"></el-option>
                                 <el-option label="审批通过" value="1"></el-option>
@@ -289,17 +350,14 @@
                     <el-form-item>
                         <el-button type="primary" @click="searchImage">查询</el-button>
                         <el-button type="danger" @click="cancelSearchImage">取消</el-button>
-                    </el-form-item>
-                    <!-- 创建镜像和删除镜像 -->
-                    <el-form-item style="margin-left: 20px;">
-                        <!-- <el-button type="primary" @click="createImage">上传</el-button> -->
                         <el-button type="danger" @click="deleteImage">删除</el-button>
+                        <el-button type="primary" @click="openHarbor">Harbor</el-button>
                     </el-form-item>
                 </el-form>
                 <!-- 内容表格 -->
                 <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable">
                     <el-table-column prop="name" label="镜像名称" align="center"></el-table-column>
-                    <el-table-column prop="companyName" label="租户名称" align="center"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
                     <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
                     <el-table-column prop="tags" label="标签" align="center"></el-table-column>
                     <el-table-column prop="pullCount" label="使用次数" align="center"></el-table-column>
@@ -330,6 +388,7 @@
                 <el-pagination
                     background
                     align="center"
+                    :hide-on-single-page = true
                     layout="prev, pager, next, jumper"
                     :total="this.totalImageData"
                     @current-change="handleCurrentChange"
@@ -342,8 +401,8 @@
             <el-main v-if="mainValue == 6">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="containerSearchForm" align="center" ref="containerSearchForm" :rules="containerRules">
-                    <el-form-item label="公司" style="margin-left: 30px;" prop="namespace">
-                        <el-select v-model="containerSearchForm.namespace" placeholder="公司">
+                    <el-form-item label="组织机构" style="margin-left: 30px;" prop="namespace">
+                        <el-select v-model="containerSearchForm.namespace" placeholder="组织机构">
                             <el-option
                             v-for="item in companyOptions"
                             :key="item.id"
@@ -365,18 +424,49 @@
                     </el-form-item>
                 </el-form>
                 <!-- 内容表格 -->
-                <el-table :data="containerData" border key="containerDataTable" @selection-change="containerSelectionChange">
+                <el-table :data="containerData" border @expand-change="expandPod" @selection-change="podSelectionChange">
+                        <el-table-column type="expand">
+                            <template slot-scope="props">
+                                <el-table :data="props.row.container_imageList" border>
+                                    <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
+                                    <el-table-column prop="image" label="镜像名称" align="center"></el-table-column>
+                                </el-table>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="podName" label="Pod名称" align="center"></el-table-column>
+                        <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                        <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
+                        <el-table-column prop="createTime" label="创建时间" align="center">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.createTime) }}
+                            </template>
+                        </el-table-column>
+                        <!-- Log相关按钮 包括软件log和容器log的查看与下载 -->
+                        <el-table-column label="日志" align="center" width="200px">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件日志</el-button>
+                                <el-button size="mini" type="danger" @click="openContainerLogDia(scope.row)">容器日志</el-button>
+                            </template>
+                        </el-table-column>
+                        <el-table-column type="selection" align="center" width="55"></el-table-column>
+                    </el-table>
+
+
+
+
+
+                <!-- <el-table :data="containerData" border key="containerDataTable" @selection-change="podSelectionChange">
                     <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
                     <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
                     <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
                     <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
-                    <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
                     <el-table-column prop="createTime" label="创建时间" align="center">
                         <template #default="scope">
                             {{ formatTime(scope.row.createTime) }}
                         </template>
                     </el-table-column>
-                    <!-- Log相关按钮 包括软件log和容器log的查看与下载 -->
+                    Log相关按钮 包括软件log和容器log的查看与下载
                     <el-table-column label="日志" align="center" width="200px">
                         <template slot-scope="scope">
                             <el-button size="mini" type="danger" @click="openSoftwareLogDia(scope.row)">软件日志</el-button>
@@ -385,7 +475,7 @@
                     </el-table-column>
                     <el-table-column type="selection" align="center" width="55"></el-table-column>
                 </el-table>
-                <br>
+                <br> -->
 
                 <!-- 软件log dialog -->
                 <el-dialog title="软件运行态日志" :visible.sync="softwareLogDiavisible" v-if="softwareLogDiavisible">
@@ -409,6 +499,7 @@
                     <el-pagination
                         background
                         align="center"
+                        :hide-on-single-page = true
                         style="margin-top: 20px"
                         layout="prev, pager, next, jumper"
                         :total="this.totalSoftwareLogData"
@@ -431,6 +522,8 @@
                 <el-pagination
                     background
                     align="center"
+                    style="margin-top: 20px;"
+                    :hide-on-single-page = true
                     layout="prev, pager, next, jumper"
                     :total="this.totalContainerData"
                     @current-change="handleCurrentChange"
@@ -443,8 +536,8 @@
             <el-main v-if="mainValue == 7">
                 <!-- 查询功能 -->
                 <el-form :inline="true" :model="historyContainerSearchForm" align="center" ref="historyContainerSearchForm" :rules="historyContainerRules">
-                    <el-form-item label="公司" style="margin-left: 30px;" prop="namespace">
-                        <el-select v-model="historyContainerSearchForm.namespace" placeholder="公司">
+                    <el-form-item label="组织机构" style="margin-left: 30px;" prop="namespace">
+                        <el-select v-model="historyContainerSearchForm.namespace" placeholder="组织机构">
                             <el-option
                             v-for="item in companyOptions"
                             :key="item.id"
@@ -463,25 +556,53 @@
                 </el-form>
 
                 <!-- 内容表格 -->
-                <el-table :data="historyContainerData" border key="historyContainerData">
-                    <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
-                    <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
-                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
-                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
-                    <el-table-column prop="companyName" label="公司名称" align="center"></el-table-column>
+                <el-table :data="historyContainerData" border @expand-change="expandHistoryPod">
+                    <el-table-column type="expand">
+                        <template slot-scope="props">
+                            <el-table :data="props.row.container_imageList" border>
+                                <el-table-column prop="containerName" label="容器实例名称" align="center"></el-table-column>
+                                <el-table-column prop="image" label="镜像名称" align="center"></el-table-column>
+                            </el-table>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="podName" label="Pod名称" align="center"></el-table-column>
+                    <el-table-column prop="username" label="用户名" align="center"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
                     <el-table-column prop="createTime" label="创建时间" align="center">
                         <template #default="scope">
                             {{ formatTime(scope.row.createTime) }}
                         </template>
                     </el-table-column>
-                    <!-- Log相关按钮 包括软件log和容器log的查看、下载和删除 -->
+                    <!-- Log相关按钮 包括软件log和容器log的查看与下载 -->
                     <el-table-column label="软件Log" align="center">
                         <template slot-scope="scope">
                             <el-button size="mini" type="danger" @click="openHistorySoftwareLogDia(scope.row)">查看软件日志</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
-                <br>
+
+
+
+
+                <!-- <el-table :data="historyContainerData" border key="historyContainerData">
+                    <el-table-column prop="containerName" label="容器实例名称" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="imageName" label="镜像名称" align="center"></el-table-column>
+                    <el-table-column prop="podName" label="pod名称" align="center"></el-table-column>
+                    <el-table-column prop="username" label="用户名" align="center" width="120px"></el-table-column>
+                    <el-table-column prop="companyName" label="组织机构" align="center"></el-table-column>
+                    <el-table-column prop="createTime" label="创建时间" align="center">
+                        <template #default="scope">
+                            {{ formatTime(scope.row.createTime) }}
+                        </template>
+                    </el-table-column>
+                    Log相关按钮 包括软件log和容器log的查看、下载和删除
+                    <el-table-column label="软件Log" align="center">
+                        <template slot-scope="scope">
+                            <el-button size="mini" type="danger" @click="openHistorySoftwareLogDia(scope.row)">查看软件日志</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <br> -->
 
                 <!-- 历史容器实例界面 软件log dialog -->
                 <el-dialog title="软件运行态日志" :visible.sync="historSoftwareLogDiavisible" v-if="historSoftwareLogDiavisible">
@@ -500,11 +621,6 @@
                                 <el-button size="mini" type="primary" @click="downloadSoftwareLog(scope.row)">下载</el-button>
                             </template>
                         </el-table-column>
-                        <!-- <el-table-column label="删除操作" align="center">
-                            <template slot-scope="scope">
-                                <el-button size="mini" type="danger" @click="deleteHistorySoftwareLog(scope.row)">删除</el-button>
-                            </template>
-                        </el-table-column> -->
                         <el-table-column type="selection" align="center" width="55"></el-table-column>
                     </el-table>
                     <span>
@@ -514,6 +630,7 @@
                     <el-pagination
                         background
                         align="center"
+                        :hide-on-single-page = true
                         style="margin-top: 20px"
                         layout="prev, pager, next, jumper"
                         :total="this.totalHistorySoftwareLogData"
@@ -527,6 +644,8 @@
                 <el-pagination
                     background
                     align="center"
+                    style="margin-top: 20px;"
+                    :hide-on-single-page = true
                     layout="prev, pager, next, jumper"
                     :total="this.totalHistoryContainerData"
                     @current-change="handleCurrentChange"
@@ -544,13 +663,24 @@
 
 <script>
 import axios from "axios";
+import CryptoJS from 'crypto-js';
 
 export default{
     data () {
+        const equalToPassword = (rule, value, callback) => {
+            if (this.createUserInfo.passConfirm !== this.createUserInfo.password) {
+                callback(new Error("两次输入的密码不一致"));
+            } else {
+                callback();
+            }
+        };
         return {
+            strength: "", // 密码弱中强的显示
+            tempUsername: "", // 临时存放用户名（用于修改用户密码）
             userData: [],  // 用户数据
-            companyData: [], // 租户数据
+            companyData: [], // 组织机构数据
             imageData: [], // 镜像管理数据
+            imageList: [], // 用于存放容器实例信息页面点击软件日志后的imageList，用于软件日志的翻页
             containerData: [], // 容器实例数据
             historyContainerData: [], // 历史的容器实例数据（running = 0）
             verifyUserList: [], // 待审批用户列表
@@ -563,10 +693,10 @@ export default{
             softwareLogData: [], // 处理后软件log数据（如log.txt testlog.txt等）
             historyOriginSoftwareLogData: [], // （历史容器实例）初始软件运行态log数据（纯数组形式）
             historySoftwareLogData: [], // （历史容器实例）处理后软件log数据（如log.txt testlog.txt等）
-            companyOptions: [], // 公司列表，供下拉选择
+            companyOptions: [], // 组织机构列表，供下拉选择
             totalUserData: 0, // 用户数据总条数
             totalVerifyUserData: 0, // 待审批用户数据总条数
-            totalCompanyData: 0, // 租户数据总条数
+            totalCompanyData: 0, // 组织机构数据总条数
             totalContainerData: 0, // 容器实例数据总条数
             totalHistoryContainerData: 0, // 历史容器实例数据总条数
             totalImageData: 0, // 镜像数据总条数
@@ -577,12 +707,20 @@ export default{
             mainValue: 0, // 控制主页面切换
             currentPage: 1, // 当前页 刷新后默认显示第一页
             pageSize: 7, // 每一页显示的数据量
+            passwordTag: "显示密码", // 显示密码or取消显示
+            createUserDiaVisible: false, // 创建用户表单显示与否
             userDataChangeDiaVisible: false, // 修改用户信息表单显示与否
-            createCompanyDiaVisible: false, // 创建租户信息表单显示与否
-            companyDataChangeDiaVisible: false, // 修改租户信息表单显示与否
+            createCompanyDiaVisible: false, // 创建组织机构信息表单显示与否
+            companyDataChangeDiaVisible: false, // 修改组织机构信息表单显示与否
             softwareLogDiavisible: false, // 软件log表单显示与否
             containerLogDiavisible: false, // 容器log表单显示与否
             historSoftwareLogDiavisible: false, // 历史容器实例的软件log表单显示与否
+            showPasswordColumn: false, // 用户界面的密码列显示与否
+            userPasswordChangeDiaVisible: false, // 修改用户密码表单显示与否
+
+            //设置秘钥和秘钥偏移量
+            SECRET_KEY: CryptoJS.enc.Utf8.parse("ul29s9b5l1x8sqo7"),
+            SECRET_IV: CryptoJS.enc.Utf8.parse("d8g65df9vc6s23df"),
 
             // 个人信息
             personalInfo: {  
@@ -593,10 +731,25 @@ export default{
                 "companyId": "",
             },
 
+            // 创建用户时的用户信息
+            createUserInfo: {
+                username: "",
+                password: "",
+                passConfirm: "",
+                phone: "",
+                companyId: "",
+            },
+
+            // 修改用户密码时的信息
+            editUserPasswordForm: {
+                password: "",
+                passConfirm: "",
+            },
+
             // 打开两类log的dialog后，临时存放当前的容器实例的podName和namespace
-            tempContainerData:{
-                "podName": "",
-                "namespace": "",
+            tempPodData:{
+                podName: "",
+                namespace: "",
             },
         
             // 用户搜索功能中的值
@@ -605,7 +758,7 @@ export default{
                 searchStatus: "",
             },
 
-            // 租户搜索功能中的值
+            // 组织机构搜索功能中的值
             companySearchForm: {  
                 searchCompanyName: "",
             },
@@ -613,7 +766,7 @@ export default{
             // 镜像管理搜索功能中的值
             imageSearchForm: {  
                 searchImageName: "",  // 镜像名称
-                searchCompanyId: "",  // 公司ID
+                searchCompanyId: "",  // 组织机构ID
                 searchStatus: "", // 镜像状态
             },
 
@@ -636,18 +789,56 @@ export default{
                 phone: "",
             },
 
-            // 创建租户时，填入的值
+            // 创建组织机构时，填入的值
             createCompanyData:{
                 name: "",
                 cpu: "",
                 memory: "", 
             },
 
-            // 更改租户信息时，选中的租户的值
+            // 更改组织机构信息时，选中的组织机构的值
             editCompanyDataForm:{
                 companyName: "",
                 cpu: "",
                 memory: "",
+            },
+
+            // 创建用户rules
+            createUserRules: {
+                username: [{ required: true, message: "用户名不能为空！", trigger: "blur" }],
+                password: [
+                    { required: true, message: "新密码不能为空", trigger: "blur" },
+                    {
+                        min: 8,
+                        max: 18,
+                        message: "长度在 8 到 18 个字符",
+                        trigger: "blur",
+                    },
+                ],
+                passConfirm: [
+                    { required: true, message: "确认密码不能为空", trigger: "blur" },
+                    { required: true, validator: equalToPassword, trigger: "blur" },
+                ],
+                phone: [{ required: true, message: "手机号码不能为空！", trigger: "blur" }],
+                companyId: [{required: true, message: "请选择组织机构！", trigger: "change" }],
+            },
+
+            // 用户修改密码rules
+            changeUserPasswordRules:{
+                // phone: [{ required: false, trigger:"change"}],
+                password: [
+                    { required: true, message: "新密码不能为空", trigger: "blur" },
+                    {
+                        min: 8,
+                        max: 18,
+                        message: "长度在 8 到 18 个字符",
+                        trigger: "blur",
+                    },
+                ],
+                passConfirm: [
+                    { required: true, message: "确认密码不能为空", trigger: "blur" },
+                    { required: true, validator: equalToPassword, trigger: "blur" },
+                ],
             },
 
             // 用户信息table rules
@@ -655,7 +846,7 @@ export default{
                 searchStatus: [{ required: false, trigger:"change"}],
                 searchCompanyName: [{ required: false, trigger:"change"}],
             },
-            // 租户信息table rules
+            // 组织机构信息table rules
             companyRules: {
                 searchCompanyName: [{ required: false, trigger:"change"}],
             },
@@ -683,8 +874,23 @@ export default{
             },
         }
     },
+    computed: {
+        // 计算两个周期值
+        tipsColor: function () {
+            let str = this.strength;
+            if(str == "弱"){
+                return 'color-ruo'
+            }else if(str == "中"){
+                return 'color-zhong'
+            }else if(str == "强"){
+                return 'color-qiang'
+            }else{
+                return ''
+            }
+        },
+    },
     mounted(){
-        // 获取公司列表
+        // 获取组织机构列表
         axios({
             method: 'get',
             url: 'api/company/list/notLogin?size=100',
@@ -697,9 +903,234 @@ export default{
         })
     },
     methods:{
+        // 展开Pod
+        expandPod() {
+
+        },
+
+        // 展开历史pod触发事件
+        expandHistoryPod() {
+
+        },
+
         // 重置表单数据
         resetForm(formName) {
             this.$refs[formName].resetFields();
+        },
+
+        // 打开创建用户的dialog
+        openCreateUserDia() {
+            this.createUserDiaVisible = true
+            this.$nextTick(() => {
+                this.resetForm('createUserInfo')
+            })
+            this.strength = ""
+        },
+
+        // 打开修改用户密码的dialog
+        openChangeUserPasswordDia(row) {
+            this.userPasswordChangeDiaVisible = true
+            this.$nextTick(() => {
+                this.resetForm('editUserPasswordForm')
+            })
+            this.tempUsername = row.username
+            this.strength = ""
+        },
+
+        // 密码传输过程 数据加密
+        encrypt(word) {
+            let srcs = CryptoJS.enc.Utf8.parse(word);
+            let encrypted = CryptoJS.AES.encrypt(srcs, this.SECRET_KEY, {
+                iv: this.SECRET_IV ,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.ZeroPadding
+            })
+            return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
+        },
+
+        // 管理员创建用户时，随机生成密码
+        randomPassword() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[];\,/<>?';
+            let password = '';
+            for (let i = 0; i < 8; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                password += characters[randomIndex];
+            }
+            this.createUserInfo.password = password;
+        },
+
+        // 更改用户密码
+        changeUserPassword:function(){
+            if(this.editUserPasswordForm.password == '') {
+                this.$message.error("请输入新密码！")
+            }
+            else if(this.editUserPasswordForm.passConfirm == '') {
+                this.$message.error("请再次输入新密码！")
+            }
+            else if(this.editUserPasswordForm.passConfirm != this.editUserPasswordForm.password) {
+                this.$message.error("两次输入的密码不一致！")
+            }
+            else if (this.editUserPasswordForm.password.length < 8 || this.editUserPasswordForm.password.length > 18) {
+                this.$message.error("密码长度为8-18位！")
+            }
+            else if(this.strength != "强") {
+                this.$message.error("密码中要同时包含数字、字母和特殊字符！")
+            }
+            else {
+                // 调用接口更改密码
+                axios({
+                    method: 'post',
+                    url: 'api/main/updatePassword',
+                    headers: {
+                        'content-Type' : "application/json",
+                        "Authorization": `${sessionStorage.getItem('adminToken')}`
+                    },
+                    data: {
+                        "password": this.editUserPasswordForm.password,
+                        "username": this.tempUsername,
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("密码修改成功！")
+                    this.userPasswordChangeDiaVisible = false
+                    this.editUserPasswordForm.password = ''
+                }).catch(error => {
+                    this.handleError(error)
+                });
+            }
+        },
+
+        // 检查密码强度
+        checkPasswordStrength() {
+            let hasLetter = false;
+            let hasNumber = false;
+            let hasSymbol = false;
+
+            if(this.createUserDiaVisible == true) {
+                for (let char of this.createUserInfo.password) {
+                    if (/[a-zA-Z]/.test(char)) {
+                    hasLetter = true;
+                    } else if (/\d/.test(char)) {
+                    hasNumber = true;
+                    } else {
+                    hasSymbol = true;
+                    }
+                }
+                if(this.createUserInfo.password.length < 8) {
+                    this.strength = "弱";
+                } else if (hasLetter + hasNumber + hasSymbol === 1) {
+                    this.strength = "弱";
+                } else if (hasLetter + hasNumber + hasSymbol === 2) {
+                    this.strength = "中";
+                } else if (hasLetter + hasNumber + hasSymbol >= 3) {
+                    this.strength = "强";
+                } else {
+                    this.strength = "";
+                }
+            }
+            else if(this.userPasswordChangeDiaVisible == true) {
+                for (let char of this.editUserPasswordForm.password) {
+                    if (/[a-zA-Z]/.test(char)) {
+                    hasLetter = true;
+                    } else if (/\d/.test(char)) {
+                    hasNumber = true;
+                    } else {
+                    hasSymbol = true;
+                    }
+                }
+                if(this.editUserPasswordForm.password.length < 8) {
+                    this.strength = "弱";
+                } else if (hasLetter + hasNumber + hasSymbol === 1) {
+                    this.strength = "弱";
+                } else if (hasLetter + hasNumber + hasSymbol === 2) {
+                    this.strength = "中";
+                } else if (hasLetter + hasNumber + hasSymbol >= 3) {
+                    this.strength = "强";
+                } else {
+                    this.strength = "";
+                }
+            }
+            
+
+            
+            // if (hasLetter + hasNumber + hasSymbol === 1) {
+            //     this.strength = "弱";
+            // } else if (hasLetter + hasNumber + hasSymbol === 2) {
+            //     this.strength = "中";
+            // } else if (hasLetter + hasNumber + hasSymbol >= 3) {
+            //     this.strength = "强";
+            // } else {
+            //     this.strength = "";
+            // }
+        },
+
+
+        // 控制密码显示与否
+        controlPasswordColumn() {
+            // console.log(this.showPasswordColumn)
+            if(this.showPasswordColumn == false) { 
+                this.showPasswordColumn = true;
+                this.$nextTick(() => {
+                    this.$refs['userDataTable'].doLayout();
+                })
+                this.passwordTag = "取消显示"
+            } else if(this.showPasswordColumn == true) { 
+                this.showPasswordColumn = false;
+                this.passwordTag = "显示密码"
+                
+            }
+        },
+
+        // 创建用户
+        createUser() {
+            if(this.createUserInfo.username == '') {
+                this.$message.error("用户名不能为空！")
+            }
+            else if(this.createUserInfo.phone == '') {
+                this.$message.error("手机号不能为空！")
+            }
+            else if(this.createUserInfo.password == '') {
+                this.$message.error("请输入新密码！")
+            }
+            else if(this.createUserInfo.passConfirm == '') {
+                this.$message.error("请再次输入新密码！")
+            }
+            else if (isNaN(Number(this.createUserInfo.phone))) {
+                this.$message.error("手机号必须为数字！");
+            }
+            else if(this.createUserInfo.passConfirm != this.createUserInfo.password) {
+                this.$message.error("两次输入的密码不一致！")
+            }
+            else if (this.createUserInfo.password.length < 8 || this.createUserInfo.password.length > 18) {
+                this.$message.error("密码长度为8-18位！")
+            }
+            else if(this.strength != "强") {
+                this.$message.error("密码中要同时包含数字、字母和特殊字符！")
+            }
+            else {
+                axios({
+                    method: 'post',
+                    url: 'api/main/register/' + this.createUserInfo.companyId,
+                    data: {
+                        username: this.createUserInfo.username,
+                        password: this.encrypt(this.createUserInfo.password),
+                        phone: this.createUserInfo.phone,
+                    }
+                }).then((result) => {
+                    console.log(result)
+                    this.$message.success("创建用户成功！")
+                    this.createUserDiaVisible = false
+                    this.changeMainTo3()
+                }).catch(error => {
+                    // 特殊情况处理
+                    if (this.createUserInfo.companyId == "" || this.createUserInfo.password == "" || this.createUserInfo.phone == "" || this.createUserInfo.username == "") {
+                        this.$message.error("有必填项为空，请检查！");
+                    }
+                    else {
+                        this.handleError(error)
+                    }
+                })
+            }
         },
 
         // 查询用户数据
@@ -751,7 +1182,6 @@ export default{
         // 取消查询，显示所有用户数据
         cancleSearchUser:function(){
             this.currentPage = 1;
-            this.resetForm('userSearchForm');
             console.log(this.userSearchForm);
             axios({
                 method: 'post',
@@ -767,12 +1197,15 @@ export default{
                 console.log(result)
                 this.userData = result.data.data.records
                 this.totalUserData = result.data.data.total // 获取总条数
+                this.$nextTick(() => {
+                    this.resetForm('userSearchForm');
+                })
             }).catch(error => {
                 this.handleError(error)
             });
         },
 
-        // 查询租户
+        // 查询组织机构
         searchTenant:function(){
             this.currentPage = 1;
             axios({
@@ -794,10 +1227,9 @@ export default{
             });
         },
 
-        // 取消查询，显示所有租户数据
+        // 取消查询，显示所有组织机构数据
         cancelSearchTenant:function(){
             this.currentPage = 1;
-            this.resetForm('companySearchForm');
             axios({
                 method: 'post',
                 url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -812,6 +1244,9 @@ export default{
                 console.log(result)
                 this.companyData = result.data.data.records
                 this.totalCompanyData = result.data.data.total // 获取总条数
+                this.$nextTick(() => {
+                    this.resetForm('companySearchForm');
+                })
             }).catch(error => {
                 this.handleError(error)
             });
@@ -846,7 +1281,6 @@ export default{
         // 取消查询，显示所有镜像数据
         cancelSearchImage:function(){
             this.currentPage = 1;
-            this.resetForm('imageSearchForm');
             axios({
                 method: 'post',
                 url: 'api/image/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -863,6 +1297,9 @@ export default{
                 console.log(result)
                 this.imageData = result.data.data.records
                 this.totalImageData = result.data.data.total // 获取总条数
+                this.$nextTick(() => {
+                    this.resetForm('imageSearchForm');
+                })
             }).catch(error => {
                 this.handleError(error)
             });
@@ -882,12 +1319,13 @@ export default{
                 },
                 data: {
                     "namespace": this.containerSearchForm.namespace,
-                    "username": this.containerSearchForm.username
+                    "username": this.containerSearchForm.username,
+                    "running": "1"
                 },
             }).then((result) => {
                 console.log(result)
-                this.containerData = result.data.data.records
-                this.totalContainerData = result.data.data.total // 获取总条数
+                this.containerData = result.data.data.content
+                this.totalContainerData = result.data.data.totalElements // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -896,7 +1334,6 @@ export default{
         // 取消查询，显示所有容器实例数据
         cancelSearchContainer:function(){
             this.currentPage = 1;
-            this.resetForm('containerSearchForm');
             axios({
                 method: 'post',
                 url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -906,12 +1343,16 @@ export default{
                 },
                 data: {
                     "namespace": "",
-                    "username": ""
+                    "username": "",
+                    "running": "1"
                 },
             }).then((result) => {
                 console.log(result)
-                this.containerData = result.data.data.records
-                this.totalContainerData = result.data.data.total // 获取总条数
+                this.containerData = result.data.data.content
+                this.totalContainerData = result.data.data.totalElements // 获取总条数
+                this.$nextTick(() => {
+                    this.resetForm('containerSearchForm');
+                })
             }).catch(error => {
                 this.handleError(error)
             });
@@ -939,19 +1380,21 @@ export default{
                     // 显示删除后的所有容器实例数据
                     this.currentPage = 1;
                     axios({
-                        method: 'get',
-                        url: 'api/container/list?' + "namespace=default" + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        method: 'post',
+                        url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                             'content-Type' : "application/json",
                             "Authorization": `${sessionStorage.getItem('adminToken')}`
                         },
-                        // data: {
-
-                        // }
+                        data: {
+                            "namespace": "",
+                            "username": "",
+                            "running": "1"
+                        }
                     }).then((result) => {
                         console.log(result)
-                        this.containerData = result.data.data.records
-                        this.totalContainerData = result.data.data.total // 获取总条数
+                        this.containerData = result.data.data.content
+                        this.totalContainerData = result.data.data.totalElements // 获取总条数
                     }).catch(error => {
                         this.handleError(error)
                     });
@@ -967,7 +1410,7 @@ export default{
             // 调用接口查询
             axios({
                 method: 'post',
-                url: 'api/container/list?' + "namespace=" + "page=" + this.currentPage + "&size=" + this.pageSize,
+                url: 'api/container/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     'content-Type' : "application/json",
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
@@ -979,8 +1422,8 @@ export default{
                 },
             }).then((result) => {
                 console.log(result)
-                this.historyContainerData = result.data.data.records
-                this.totalHistoryContainerData = result.data.data.total // 获取总条数
+                this.historyContainerData = result.data.data.content
+                this.totalHistoryContainerData = result.data.data.totalElements // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -989,7 +1432,6 @@ export default{
         // 取消查询，显示所有历史容器实例数据
         cancelSearchHistoryContainer:function(){
             this.currentPage = 1;
-            this.resetForm('historyContainerSearchForm');
             // 获取所有容器实例信息
             axios({
                 method: 'post',
@@ -1005,8 +1447,11 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.historyContainerData = result.data.data.records
-                this.totalHistoryContainerData = result.data.data.total // 获取总条数
+                this.historyContainerData = result.data.data.content
+                this.totalHistoryContainerData = result.data.data.totalElements // 获取总条数
+                this.$nextTick(() => {
+                    this.resetForm('historyContainerSearchForm');
+                })
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1059,44 +1504,44 @@ export default{
         //     });
         // },
 
-        // 编辑用户数据
-        editUserData:function(index, row){  
-            console.log(index, row);
-            this.userDataChangeDiaVisible = true; // 显示表单
-            this.editUserDataForm.username = row.username;
-            this.editUserDataForm.name = row.name;
-            this.editUserDataForm.phone = row.phone;
-        },
-        // 更改用户数据
-        changeUserData:function(){
-            if (this.editUserDataForm.name == '' || this.editUserDataForm.phone == '' || this.editUserDataForm.username == '') {
-                this.$message.error("存在空白项，请检查！");
-            }
-            else {
-                this.userDataChangeDiaVisible = false;
-                this.$message.success("编辑成功！");
-            }
+        // // 编辑用户数据
+        // editUserData:function(index, row){  
+        //     console.log(index, row);
+        //     this.userDataChangeDiaVisible = true; // 显示表单
+        //     this.editUserDataForm.username = row.username;
+        //     this.editUserDataForm.name = row.name;
+        //     this.editUserDataForm.phone = row.phone;
+        // },
+        // // 更改用户数据
+        // changeUserData:function(){
+        //     if (this.editUserDataForm.name == '' || this.editUserDataForm.phone == '' || this.editUserDataForm.username == '') {
+        //         this.$message.error("存在空白项，请检查！");
+        //     }
+        //     else {
+        //         this.userDataChangeDiaVisible = false;
+        //         this.$message.success("编辑成功！");
+        //     }
 
-            // axios({
-            //     method: 'post',
-            //     url: 'api/main/update',
-            //     headers: {
-            //         'content-Type' : "application/json",
-            //         "Authorization": `${sessionStorage.getItem('adminToken')}`
-            //     },
-            //     data: {
-            //         "username": this.editUserDataForm.username,
-            //         "name": this.editUserDataForm.name,
-            //         "phone": this.editUserDataForm.phone,
-            //     }
-            // }).then((result) => {
-            //     console.log(result)
-            // }).catch(error => {
-            //     this.handleError(error)
-            // });
+        //     // axios({
+        //     //     method: 'post',
+        //     //     url: 'api/main/update',
+        //     //     headers: {
+        //     //         'content-Type' : "application/json",
+        //     //         "Authorization": `${sessionStorage.getItem('adminToken')}`
+        //     //     },
+        //     //     data: {
+        //     //         "username": this.editUserDataForm.username,
+        //     //         "name": this.editUserDataForm.name,
+        //     //         "phone": this.editUserDataForm.phone,
+        //     //     }
+        //     // }).then((result) => {
+        //     //     console.log(result)
+        //     // }).catch(error => {
+        //     //     this.handleError(error)
+        //     // });
 
-        },
-        // 编辑租户数据
+        // },
+        // 编辑组织机构数据
         editCompanyData:function(index, row){
             console.log(index, row);
             this.companyDataChangeDiaVisible = true; // 显示表单
@@ -1104,7 +1549,7 @@ export default{
             this.editCompanyDataForm.cpu = row.cpu;
             this.editCompanyDataForm.memory = row.memory;
         },
-        // 更改租户数据
+        // 更改组织机构数据
         changeCompanyData:function(){
             if (this.editCompanyDataForm.companyName == '' || this.editCompanyDataForm.cpu == '' || this.editCompanyDataForm.memory == '') {
                 this.$message.error("存在空白项，请检查！");
@@ -1154,6 +1599,8 @@ export default{
                         },
                         data: {
                             "name": "",
+                            "companyId": "",
+                            "status": "",
                         }
                     }).then((result) => {
                         this.imageData = result.data.data.records
@@ -1241,11 +1688,11 @@ export default{
             }));
         },
 
-        // 获取容器实例管理中的选中项
-        containerSelectionChange(val) {
+        // 获取容器实例管理中的pod选中项
+        podSelectionChange(val) {
             this.selectedContainerList = val.map(row => ({
                 namespace: row.namespace,
-                name: row.podName,
+                podName: row.podName,
             }));
         },
 
@@ -1253,8 +1700,8 @@ export default{
         historySoftwareLogSelectionChange(val) {
             this.selectedHistorySoftwareLog = val.map(row => ({
                 fileName: row.fileName,
-                namespace: this.tempContainerData.namespace,
-                podName: this.tempContainerData.podName,
+                namespace: this.tempPodData.namespace,
+                image: row.image,
             }));
         },
 
@@ -1286,6 +1733,7 @@ export default{
         changeMainTo2:function(){
             this.mainValue = 2;
             this.currentPage = 1;
+            this.selectedImageList = []
             // 获得所有待审批镜像信息
             axios({
                 method: 'post',
@@ -1310,6 +1758,9 @@ export default{
         changeMainTo3:function(){
             this.mainValue = 3;
             this.currentPage = 1;
+            this.showPasswordColumn = false;
+            this.userSearchForm.searchCompanyName = ""
+            this.userSearchForm.searchStatus = ""
             // 获得所有用户信息
             axios({
                 method: 'post',
@@ -1330,11 +1781,12 @@ export default{
             });
         },
 
-        // 租户管理页面
+        // 组织机构管理页面
         changeMainTo4:function(){
             this.mainValue = 4;
             this.currentPage = 1;
-            // 获得所有租户信息
+            this.companySearchForm.searchCompanyName = "";
+            // 获得所有组织机构信息
             axios({
                 method: 'post',
                 url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
@@ -1358,6 +1810,10 @@ export default{
         changeMainTo5:function(){
             this.mainValue = 5;
             this.currentPage = 1;
+            this.imageSearchForm.searchCompanyId = "";
+            this.imageSearchForm.searchImageName = "";
+            this.imageSearchForm.searchStatus = "";
+            this.selectedImageList = []
             // 获得所有镜像信息
             axios({
                 method: 'post',
@@ -1384,6 +1840,9 @@ export default{
         changeMainTo6:function(){
             this.mainValue = 6
             this.currentPage = 1
+            this.containerSearchForm.namespace = ""
+            this.containerSearchForm.username = ""
+            this.selectedContainerList = []
             // 获取所有容器实例信息
             axios({
                 method: 'post',
@@ -1394,12 +1853,13 @@ export default{
                 },
                 data: {
                     "namespace": "",
-                    "username": "", 
+                    "username": "",
+                    "running": "1",
                 }
             }).then((result) => {
                 console.log(result)
-                this.containerData = result.data.data.records
-                this.totalContainerData = result.data.data.total // 获取总条数
+                this.containerData = result.data.data.content
+                this.totalContainerData = result.data.data.totalElements // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1409,6 +1869,8 @@ export default{
         changeMainTo7:function() {
             this.mainValue = 7
             this.currentPage = 1
+            this.historyContainerSearchForm.namespace = ""
+            this.historyContainerSearchForm.username = ""
             // 获取所有历史容器实例信息
             axios({
                 method: 'post',
@@ -1424,21 +1886,27 @@ export default{
                 }
             }).then((result) => {
                 console.log(result)
-                this.historyContainerData = result.data.data.records
-                this.totalHistoryContainerData = result.data.data.total // 获取总条数
+                this.historyContainerData = result.data.data.content
+                this.totalHistoryContainerData = result.data.data.totalElements // 获取总条数
             }).catch(error => {
                 this.handleError(error)
             });
         },
 
 
-        // 创建租户
+        // 创建组织机构
         createCompany:function(){
             if (this.createCompanyData.cpu == '' || this.createCompanyData.memory == '' || this.createCompanyData.name == '') {
                 this.$message.error("存在空白项，请检查！");
             }
+            else if (isNaN(Number(this.createCompanyData.cpu))) {
+                this.$message.error("CPU字段必须为数字！");
+            }
+            else if (isNaN(Number(this.createCompanyData.memory))) {
+                this.$message.error("内存字段必须为数字！");
+            }
             else {
-                // 调用接口创建租户
+                // 调用接口创建组织机构
                 axios({
                     method: 'post',
                     url: 'api/company/create',
@@ -1453,13 +1921,44 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
+                    // 关闭窗口
+                    this.createCompanyDiaVisible = false;
+                    // 弹出提示信息
+                    this.$message.success("创建成功！");
+                    // 调用接口 获取组织机构信息
+                    this.currentPage = 1
+                    axios({
+                        method: 'post',
+                        url: 'api/company/list?' + "page=" + this.currentPage + "&size=" + this.pageSize,
+                        headers: {
+                            'content-Type' : "application/json",
+                            "Authorization": `${sessionStorage.getItem('adminToken')}`
+                        },
+                        data: {
+                            "status": "",
+                        }
+                    }).then((result) => {
+                        console.log(result)
+                        this.companyData = result.data.data.records
+                        this.totalCompanyData = result.data.data.total // 获取总条数
+                    }).catch(error => {
+                        this.handleError(error)
+                    });
+                    // 调用接口 获取组织机构列表
+                    axios({
+                        method: 'get',
+                        url: 'api/company/list/notLogin?size=100',
+                    }).then((result) => {
+                        console.log(result.data)
+                        this.companyOptions = result.data.data.records
+                        console.log(this.companyOptions)
+                    }).catch(error => {
+                        this.handleError(error)
+                    })
                 }).catch(error => {
                     this.handleError(error)
                 });
-                // 关闭窗口
-                this.createCompanyDiaVisible = false;
-                // 弹出提示信息
-                this.$message.success("创建成功！");
+
             }
         },
 
@@ -1674,17 +2173,20 @@ export default{
             }
         },
 
-        // 打开历史容器实力页面软件运行态log的对话框
+        // 打开历史容器实例页面软件运行态log的对话框
         openHistorySoftwareLogDia(row) {
+            // 清空选中项
+            this.selectedHistorySoftwareLog = []
             // 将该容器实例的podName和namespace暂时保存下来
-            this.tempContainerData.podName = row.podName
-            this.tempContainerData.namespace = row.namespace
-            console.log(this.tempContainerData)
+            this.tempPodData.podName = row.podName
+            this.tempPodData.namespace = row.namespace
+            this.imageList = row.container_imageList.map(img_info => img_info.image);
+            console.log(this.tempPodData)
             // 调用接口获取软件日志列表
-            this.currentPage = 0
+            this.currentPage = 1
             axios({
                 method: 'get',
-                url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempPodData.podName + "&namespace=" + this.tempPodData.namespace + "&imageList=" + this.imageList + "&page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
@@ -1701,12 +2203,13 @@ export default{
                 }
                 this.totalHistorySoftwareLogData = result.data.data.totalElements // 获得总条数
                 this.historSoftwareLogDiavisible = true
+                this.changeMainTo7()
             }).catch(error => {
                 this.handleError(error)
             });
         },
 
-        // 删除历史容器实例的日志
+        // 删除历史容器实例的软件日志
         deleteHistorySoftwareLog() {
             console.log(this.selectedHistorySoftwareLog)
             if(this.selectedHistorySoftwareLog == "") {
@@ -1728,7 +2231,7 @@ export default{
                     this.currentPage = 0
                     axios({
                         method: 'get',
-                        url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempPodData.podName + "&namespace=" + this.tempPodData.namespace + "&imageList=" + this.imageList + "&page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                             "Authorization": `${sessionStorage.getItem('adminToken')}`
                         },
@@ -1751,14 +2254,15 @@ export default{
         // 打开软件运行态log的对话框
         openSoftwareLogDia(row){
             // 将该容器实例的podName和namespace暂时保存下来
-            this.tempContainerData.podName = row.podName
-            this.tempContainerData.namespace = row.namespace
-            console.log(this.tempContainerData)
+            this.tempPodData.podName = row.podName
+            this.tempPodData.namespace = row.namespace
+            this.imageList = row.container_imageList.map(img_info => img_info.image);
+            console.log(this.tempPodData)
             // 调用接口获取软件日志列表
             this.currentPage = 0
             axios({
                     method: 'get',
-                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempPodData.podName + "&namespace=" + this.tempPodData.namespace + "&imageList=" + this.imageList + "&page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
@@ -1785,8 +2289,8 @@ export default{
         openContainerLogDia(row){
             this.containerLogDiavisible = true
             // 将该容器实例的podName和namespace暂时保存下来
-            this.tempContainerData.podName = row.podName
-            this.tempContainerData.namespace = row.namespace
+            this.tempPodData.podName = row.podName
+            this.tempPodData.namespace = row.namespace
         },
 
         // 查看软件log
@@ -1796,14 +2300,14 @@ export default{
             // 调用接口查看软件log
             axios({
                 method: 'get',
-                url: 'api/file/download?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&fileName=" + row.fileName + "&option=1",
+                url: 'api/file/download?' + "image=" + row.image + "&namespace=" + this.tempPodData.namespace + "&fileName=" + row.fileName + "&option=1",
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
             }).then((result) => {
                 console.log(result)
                 logData = result.data
-                logData = logData.replace(/\n/g, "<br>")
+                logData = logData.toString().replace(/\n/g, "<br>")
                 // 打开新页面展示log
                 const newWindow = window.open('', '_blank');
                 newWindow.document.write(logData);
@@ -1816,7 +2320,7 @@ export default{
         downloadSoftwareLog(row){
             axios({
                 method: 'GET',
-                url: 'http://localhost:7000/api/file/download?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&fileName=" + row.fileName + "&option=0",
+                url: 'http://localhost:7000/api/file/download?' + "image=" + row.image + "&namespace=" + this.tempPodData.namespace + "&fileName=" + row.fileName + "&option=0",
                 responseType: 'blob',  // 指定响应类型为blob用于文件下载
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
@@ -1839,14 +2343,14 @@ export default{
             // 调用接口查看容器log
             axios({
                 method: 'get',
-                url: 'api/container/getPodLog?' + "namespace=" + this.tempContainerData.namespace + "&podName=" + this.tempContainerData.podName + "&option=1",
+                url: 'api/container/getPodLog?' + "namespace=" + this.tempPodData.namespace + "&podName=" + this.tempPodData.podName + "&option=1",
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
                 },
             }).then((result) => {
                 console.log(result)
                 logData = result.data
-                logData = logData.replace(/\n/g, "<br>")
+                logData = logData.toString().replace(/\n/g, "<br>")
                 // 打开新页面展示log
                 const newWindow = window.open('', '_blank');
                 newWindow.document.write(logData);
@@ -1859,7 +2363,7 @@ export default{
         downloadContainerLog(){
             axios({
                 method: 'GET',
-                url: "http://localhost:7000/api/container/getPodLog?" + "namespace=" + this.tempContainerData.namespace + "&podName=" + this.tempContainerData.podName + "&option=0",
+                url: "http://localhost:7000/api/container/getPodLog?" + "namespace=" + this.tempPodData.namespace + "&podName=" + this.tempPodData.podName + "&option=0",
                 responseType: 'blob',  // 指定响应类型为blob用于文件下载
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
@@ -1962,7 +2466,7 @@ export default{
                         });
                 }
             }
-            // 如果当前页面是租户管理页面
+            // 如果当前页面是组织机构管理页面
             if(this.mainValue == 4) {
                 axios({
                     method: 'post',
@@ -2015,12 +2519,13 @@ export default{
                     },
                     data: {
                         "namespace": this.containerSearchForm.namespace,
-                        "username": this.containerSearchForm.username
+                        "username": this.containerSearchForm.username,
+                        "running": "1"
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.containerData = result.data.data.records
-                    this.totalLogData = result.data.data.total // 获取总条数
+                    this.containerData = result.data.data.content
+                    this.totalLogData = result.data.data.totalElements // 获取总条数
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -2031,7 +2536,7 @@ export default{
                 // 调用接口获取软件日志列表
                 axios({
                     method: 'get',
-                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempPodData.podName + "&namespace=" + this.tempPodData.namespace + "&imageList=" + this.imageList + "&page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
@@ -2069,8 +2574,8 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.historyContainerData = result.data.data.records
-                    this.totalHistoryContainerData = result.data.data.total // 获取总条数
+                    this.historyContainerData = result.data.data.content
+                    this.totalHistoryContainerData = result.data.data.totalElements // 获取总条数
                 }).catch(error => {
                     this.handleError(error)
                 });
@@ -2081,7 +2586,7 @@ export default{
                 // 调用接口获取软件日志列表
                 axios({
                     method: 'get',
-                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempContainerData.podName + "&namespace=" + this.tempContainerData.namespace + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    url: 'api/file/getSoftwareLogs?' + "podName=" + this.tempPodData.podName + "&namespace=" + this.tempPodData.namespace + "&imageList=" + this.imageList + "&page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                         "Authorization": `${sessionStorage.getItem('adminToken')}`
                     },
@@ -2104,21 +2609,22 @@ export default{
         },
 
         // 格式化用户状态
-        formatStatus(row, column, cellValue, index) {
+        formatUserStatus(row, column, cellValue, index) {
             switch (cellValue) {
                 case 0:
-                    return '待审批';
+                    return '正常';
                 case 1:
-                    return '审批通过';
-                case 2:
-                    return '审批不通过';
-                case 3:
                     return '已删除';
-                case 4:
+                case 2:
                     return '异常';
                 default:
                     return '未知状态';  
             }
+        },
+
+        // 打开Harbor页面
+        openHarbor() {
+            window.open('https://192.168.5.130:1119/');
         },
 
         // 将时间中间的T换成空格
@@ -2162,6 +2668,17 @@ export default{
       span {
         color: #fff !important;
       }
+}
+
+/* 密码弱中强字体颜色 */
+.color-ruo{
+  color: #f56c6c;
+}
+.color-zhong{
+  color: #e6a23c;
+}
+.color-qiang{
+  color: #67c23a;
 }
 
 </style>
