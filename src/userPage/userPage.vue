@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-container style="height: 700px; border: 1px solid #eee">
-        <el-header style="font-size: 37px; background-color: rgb(199, 0, 25); color: white;">用户系统</el-header>
+        <el-header style="font-size: 37px; background-color: rgb(199, 0, 25); color: white;">用户界面</el-header>
         <el-container>
             <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
                 <el-menu :default-openeds="['1', '1-2']">
