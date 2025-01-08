@@ -1,6 +1,6 @@
 <template>
   <div class="registerBackground">
-    <el-image style="margin-left: 5px; margin-top: 5px; width: 260px;"  :src= "require('../images/logo.png')"></el-image>
+    <!-- <el-image style="margin-left: 5px; margin-top: 5px; width: 260px;"  :src= "require('../images/logo.png')"></el-image> -->
     <el-card class="box-card">
       <h2>登录</h2>
       <el-form
@@ -17,9 +17,9 @@
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input
-            type="password"
             v-model="userInfo.password"
             autocomplete="off"
+            show-password
           ></el-input>
         </el-form-item>
 
@@ -40,9 +40,9 @@
       <div class="btnGroup">
         <el-button type="danger" @click="submitForm">登录</el-button>
         <el-button @click="resetForm('userInfo')">重置</el-button>
-        <router-link to="/Register">
+        <!-- <router-link to="/Register">
           <el-button style="margin-left:10px">注册</el-button>
-        </router-link>
+        </router-link> -->
       </div>
     </el-card>
   </div>
@@ -93,7 +93,13 @@ export default {
     },
     // 点击登录按钮触发
     submitForm() {
-      if (this.userInfo.inputCode == '') {
+      if(this.userInfo.username == '') {
+        this.$message.error("请输入用户名！");
+      }
+      else if (this.userInfo.password == '') {
+        this.$message.error("请输入密码！");
+      }
+      else if (this.userInfo.inputCode == '') {
         this.$message.error("请输入验证码！");
       }
       else if(this.userInfo.inputCode.toLowerCase() != this.code.toLowerCase()){

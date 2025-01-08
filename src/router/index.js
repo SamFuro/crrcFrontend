@@ -35,11 +35,11 @@ const routes = [
     component: Test3,
   },
 
-  {
-    name: 'Register',
-    path: '/Register',
-    component: Register,
-  },
+  // {
+  //   name: 'Register',
+  //   path: '/Register',
+  //   component: Register,
+  // },
 
   {
     name: 'Login',

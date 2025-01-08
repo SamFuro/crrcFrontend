@@ -31,6 +31,7 @@
           <el-button type="primary" @click="getUserData" style="margin-top: 20px;">获取用户信息</el-button>
           <el-button type="primary" @click="getUserData" style="margin-top: 20px;">跳转测试</el-button>
           <el-button type="primary" @click="dialogFormVisible = true" style="margin-top: 20px;">打开上传文件的Dialog</el-button>
+          <el-button type="danger" @click="getImageFileForBuild">获取用于build镜像的资源测试</el-button>
         </div>
       </el-card>
 
@@ -113,6 +114,23 @@
       };
     },
     methods: {
+      // 获取用于build镜像的资源测试
+      getImageFileForBuild() {
+        axios({
+              method: 'get',
+              url: 'api/image/getResourcesForBuild?namespace=1&image=myimage2:v1.0',
+              headers: {
+                      "Authorization": `${sessionStorage.getItem('userToken')}`,
+                  },
+          }).then((result) => {
+              console.log(result.data)
+          }).catch(error => {
+              this.handleError(error)
+          })
+      },
+
+
+
       checkFile() {
             document.querySelector('#fileInput').click()
       },
@@ -229,8 +247,8 @@
   
   <style scoped>
   .box-card {
-    margin-top: 150px;
-    margin-left: 550px;
+    margin-top: 80px;
+    margin-left: 440px;
     width: 400px;
   }
   .login-form {

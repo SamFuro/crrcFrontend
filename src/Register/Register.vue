@@ -163,7 +163,7 @@ export default {
               if (this.userInfo.companyId == "" || this.userInfo.name == "" || this.userInfo.passConfirm == "" || this.userInfo.password == "" || this.userInfo.phone == "" || this.userInfo.username == "") {
                 this.$message.error("有必填项为空，请检查！");
               }
-              // this.handleError(error)
+              this.handleError(error)
           })
       }
     },
