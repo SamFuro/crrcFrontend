@@ -10,8 +10,8 @@
                         <el-menu-item-group>
                             <el-menu-item index="1-1" @click="changeMainTo1">测试页面（表格嵌套）</el-menu-item>
                             <el-menu-item index="1-2" @click="changeMainTo2">测试页面（翻页不取消selection）</el-menu-item>
-                            <!--<el-menu-item index="1-3" @click="changeMainTo3">租户管理</el-menu-item>
-                            <el-menu-item index="1-4" @click="changeMainTo4">镜像管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="changeMainTo3">测试页面（按钮）</el-menu-item>
+                            <!--<el-menu-item index="1-4" @click="changeMainTo4">镜像管理</el-menu-item>
                             <el-menu-item index="1-5" @click="changeMainTo5">容器实例管理</el-menu-item>
                             <el-menu-item index="1-6" @click="changeMainTo6">软件运行态log管理</el-menu-item> -->
                         </el-menu-item-group>
@@ -67,6 +67,11 @@
                         :page-size="pageSize">
                     </el-pagination>
                 </el-main>
+
+                <el-main v-if="mainValue == 3">
+                    <el-input v-model="testNumber"></el-input>
+                    <el-button type="primary" @click="testPositiveNumber">测试是否为正数</el-button>
+                </el-main>
             
         </el-container>
         </el-container>
@@ -84,6 +89,7 @@ export default{
             mainValue: 0,
             currentPage: 1,
             pageSize: 3,
+            testNumber: "",
             selectedUserList: [],
             verifyUserList: [
                 {
@@ -153,6 +159,18 @@ export default{
         },
         changeMainTo2() {
             this.mainValue = 2
+        },
+        changeMainTo3() {
+            this.mainValue = 3
+        },
+
+        testPositiveNumber() {
+            if (isNaN(Number(this.testNumber)) || Number(this.testNumber) <= 0) {
+                this.$message.error("不是正数！")
+            }
+            else {
+                this.$message.success("是正数！")
+            }
         },
 
         // 获取用户审批中的选中项
@@ -250,9 +268,6 @@ export default{
                     this.$refs.verifyUserList.toggleRowSelection(item, true);
                 }
             });
-            
-
-            
         }
 
 

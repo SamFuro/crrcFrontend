@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-container style="height: 700px; border: 1px solid #eee">
-        <el-header style="font-size: 37px; background-color: rgb(199, 0, 25); color: white;">用户界面</el-header>
+        <el-header style="font-size: 37px; background-color: rgb(199, 0, 25); color: white;">用户系统</el-header>
         <el-container>
             <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
                 <el-menu :default-openeds="['1', '1-2']">
@@ -25,10 +25,27 @@
                 <!-- <el-descriptions-item label="头像">
                     <el-avatar :src="avatarPath"></el-avatar>
                 </el-descriptions-item> -->
-                <el-descriptions-item label="用户名">{{ userData.username }}</el-descriptions-item>
-                <!-- <el-descriptions-item label="姓名">{{ userData.name }}</el-descriptions-item> -->
-                <el-descriptions-item label="手机号">{{  userData.phone }}</el-descriptions-item>
-                <el-descriptions-item label="组织机构">{{ userData.companyName }}</el-descriptions-item>
+                <el-descriptions-item :contentStyle="{'text-align': 'center'}" :labelStyle="{'text-align': 'center'}">
+                    <template slot="label">
+                        <i class="el-icon-user-solid"></i>
+                        用户名
+                    </template>
+                    {{ userData.username }}
+                </el-descriptions-item>
+                <el-descriptions-item :contentStyle="{'text-align': 'center'}" :labelStyle="{'text-align': 'center'}">
+                    <template slot="label">
+                        <i class="el-icon-phone"></i>
+                            手机号
+                        </template>
+                    {{  userData.phone }}
+                </el-descriptions-item>
+                <el-descriptions-item :contentStyle="{'text-align': 'center'}" :labelStyle="{'text-align': 'center'}">
+                    <template slot="label">
+                        <i class="el-icon-s-home"></i>
+                            组织机构
+                        </template>
+                    {{ userData.companyName }}
+                </el-descriptions-item>
             </el-descriptions>
             <span>
                 <el-button type="primary"  style="margin-left: 620px; margin-top: 20px;" @click="userDataChangeDiaVisible = true; editUserDataForm.phone='';">修改个人信息</el-button>
@@ -41,7 +58,7 @@
                     <!-- <el-form-item label="姓名" :label-width='"100px"'>
                         <el-input v-model="editUserDataForm.name" autocomplete="off" width="200px"></el-input>
                     </el-form-item> -->
-                    <el-form-item label="电话" :label-width='"100px"'>
+                    <el-form-item label="手机号" :label-width='"100px"'>
                         <el-input v-model="editUserDataForm.phone" autocomplete="off" maxlength="11" show-word-limit></el-input>
                     </el-form-item>
                 </el-form>
@@ -207,7 +224,7 @@
                         </div>
                     </el-dialog>
 
-                    <!-- 上传镜像dialog -->
+                    <!-- 上传镜像dialog 
                     <el-dialog title="上传镜像" :visible.sync="uploadImageDiaVisible">
                         <el-form>
                             <el-form-item label="tar包名称">
@@ -218,7 +235,7 @@
                                     <input id="fileInput" type="file" style="display: none;"  ref="uploadRef" @change="uploadImage($event)" />
                             </el-form-item>
                         </el-form>
-                    </el-dialog>
+                    </el-dialog>-->
 
                      <!-- 内容表格 -->
                     <el-table :data="imageData" border @selection-change="imageSelectionChange" key="imageDataTable" ref="imageData">
@@ -227,6 +244,7 @@
                         <el-table-column prop="username" label="用户名称" align="center"></el-table-column>
                         <el-table-column prop="tags" label="标签" align="center"></el-table-column>
                         <el-table-column prop="pullCount" label="使用次数" align="center"></el-table-column>
+                        <el-table-column prop="size" label="镜像大小（MiB）" align="center" width="140px"></el-table-column>
                         <el-table-column prop="creationTime" label="创建时间" align="center">
                             <template #default="scope">
                                 {{ formatTime(scope.row.creationTime) }}
@@ -283,35 +301,35 @@
 
                     <!-- 配置文件 dialog -->
                     <el-dialog title="配置文件" :visible.sync="configDiaVisible" v-if="configDiaVisible" width="800px">
-                    <el-table :data="configFileData" key="configFileData" @selection-change="configFilesSelectionChange">
-                        <el-table-column label="文件名称" prop="fileName" align="center"></el-table-column>
-                        <!-- 操作按钮 查看&下载 -->
-                        <el-table-column label="查看内容" align="center" width="150px">
-                            <template slot-scope="scope">
-                                <el-button size="mini" type="success" @click="viewConfigFile(scope.row)">查看</el-button>
-                                <el-button size="mini" type="primary" @click="downloadConfigFile(scope.row)">下载</el-button>
-                            </template>
-                        </el-table-column>
-                        <el-table-column type="selection" align="center" width="55"></el-table-column>
-                    </el-table>
-                    <span>
-                        <el-button type="primary" size="mini" @click="checkConfigFile" style="margin-left: 580px; margin-top:20px">上传文件</el-button>
-                            <input id="uploadConfig" type="file" style="display: none;"  ref="uploadConfig" @change="uploadConfig($event)" multiple />
-                        <el-button type="danger" size="mini" @click="deleteConfigFile" style="margin-left: 10px;">删除</el-button>
-                    </span>
-                    <!-- 分页条 -->
-                    <el-pagination
-                        background
-                        align="center"
-                        :hide-on-single-page = true
-                        style="margin-top: 20px"
-                        layout="prev, pager, next, jumper"
-                        :total="this.totalConfigFileData"
-                        @current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-size="pageSize">
-                    </el-pagination>
-                </el-dialog>
+                        <el-table :data="configFileData" key="configFileData" @selection-change="configFilesSelectionChange">
+                            <el-table-column label="文件名称" prop="fileName" align="center"></el-table-column>
+                            <!-- 操作按钮 查看&下载 -->
+                            <el-table-column label="查看内容" align="center" width="150px">
+                                <template slot-scope="scope">
+                                    <el-button size="mini" type="success" @click="viewConfigFile(scope.row)">查看</el-button>
+                                    <el-button size="mini" type="primary" @click="downloadConfigFile(scope.row)">下载</el-button>
+                                </template>
+                            </el-table-column>
+                            <el-table-column type="selection" align="center" width="55"></el-table-column>
+                        </el-table>
+                        <span>
+                            <el-button type="primary" size="mini" @click="checkConfigFile" style="margin-left: 580px; margin-top:20px">上传文件</el-button>
+                                <input id="uploadConfig" type="file" style="display: none;"  ref="uploadConfig" @change="uploadConfig($event)" multiple />
+                            <el-button type="danger" size="mini" @click="deleteConfigFile" style="margin-left: 10px;">删除</el-button>
+                        </span>
+                        <!-- 分页条 -->
+                        <el-pagination
+                            background
+                            align="center"
+                            :hide-on-single-page = true
+                            style="margin-top: 20px"
+                            layout="prev, pager, next, jumper"
+                            :total="this.totalConfigFileData"
+                            @current-change="handleCurrentChange"
+                            :current-page="currentPage"
+                            :page-size="pageSize">
+                        </el-pagination>
+                    </el-dialog>
 
 
                     <!-- 分页条 -->
@@ -500,7 +518,7 @@
                                 {{ formatTime(scope.row.updateTime) }}
                             </template>
                         </el-table-column>
-                        <el-table-column label="server" prop="server" align="center"></el-table-column>
+                        <el-table-column label="服务器" prop="server" align="center"></el-table-column>
                         <!-- 操作按钮 查看&下载&删除 -->
                         <el-table-column label="查看内容" align="center" width="150px">
                             <template slot-scope="scope">
@@ -619,6 +637,7 @@ export default{
                 "phone": "",
                 "companyName": "",
                 "companyId": "",
+                "namespace": "",
             },
 
             // 创建新镜像的数据
@@ -736,12 +755,13 @@ export default{
                 "Authorization": `${sessionStorage.getItem('userToken')}`
             },
         }).then((result) => {
+            console.log(result)
             this.userData.username = result.data.data.username
             this.userData.name = result.data.data.name
             this.userData.phone = result.data.data.phone
             this.userData.companyName = result.data.data.companyName
-            this.userData.companyId = result.data.data.CompanyId
-            console.log("companyId:", result.data.data.CompanyId)
+            this.userData.namespace = result.data.data.CompanyId
+            this.userData.namespace = result.data.data.namespace
             console.log(this.userData)
         }).catch(error => {
             this.handleError(error)
@@ -768,7 +788,7 @@ export default{
             // 调用接口 获取所有config文件列表
             axios({
                 method: 'get',
-                url: 'api/container/getConfigList?' + 'namespace=' + this.userData.companyId + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                url: 'api/container/getConfigList?' + 'namespace=' + this.userData.namespace + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
                 headers: {
                         "Authorization": `${sessionStorage.getItem('userToken')}`,
                     },
@@ -795,10 +815,20 @@ export default{
         createPodForCommunicate() {
             const regExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
             if(this.podNameUserWrite == "") {
-                this.$message.error("Pod名称为空！")
+                this.$message({
+                    message: "Pod名称为空！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(!regExp.test(this.podNameUserWrite)) {
-                this.$message.error("Pod名称格式不正确！")
+                this.$message({
+                    message: "Pod名称格式不正确！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 const imageList = this.selectedImageList.map(item => `${item.imageName}:${item.tag}`);
@@ -807,13 +837,18 @@ export default{
                 // 调用接口创建pod
                 axios({
                     method: 'post',
-                    url: 'api/container/createPodForCommunicate?' + 'namespace=' + this.userData.companyId + "&podName=" + this.podNameUserWrite + "&imageList=" + imageList,
+                    url: 'api/container/createPodForCommunicate?' + 'namespace=' + this.userData.namespace + "&podName=" + this.podNameUserWrite + "&imageList=" + imageList,
                     headers: {
                             "Authorization": `${sessionStorage.getItem('userToken')}`,
                         },
                     }).then((result) => {
                         console.log(result.data)
-                        this.$message.success("通信pod创建成功！")
+                        this.$message({
+                            message: "通信pod创建成功！",
+                            type: "success",
+                            showClose: true,
+                            duration: 8000,
+                        })
                         this.writePodNameDiaVisible = false;
                     }).catch(error => {
                         this.handleError(error)
@@ -824,24 +859,33 @@ export default{
         // 删除配置文件
         deleteConfigFile() {
             if(this.selectedConfigFiles == "") {
-                this.$message("未选择任何配置文件！")
+                this.$message({
+                    message: "未选择任何配置文件！",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 // 调用接口删除配置文件
                 axios({
                 method: 'post',
-                url: 'api/container/deleteConfigFile?' + '&image=' + this.imageAndTags + "&namespace=" + this.userData.companyId + "&fileNameList=" + this.selectedConfigFiles,
+                url: 'api/container/deleteConfigFile?' + '&image=' + this.imageAndTags + "&namespace=" + this.userData.namespace + "&fileNameList=" + this.selectedConfigFiles,
                 headers: {
                         "Authorization": `${sessionStorage.getItem('userToken')}`,
                     },
                 }).then((result) => {
                     console.log(result.data)
-                    this.$message.success("配置文件删除成功！")
+                    this.$message({
+                        message: "配置文件删除成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     this.currentPage = 1
                     // 调用接口获取所有配置文件
                     axios({
                         method: 'get',
-                        url: 'api/container/getConfigList?' + 'namespace=' + this.userData.companyId + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        url: 'api/container/getConfigList?' + 'namespace=' + this.userData.namespace + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                                 "Authorization": `${sessionStorage.getItem('userToken')}`,
                         },
@@ -872,22 +916,31 @@ export default{
             console.log(this.selectedImageFilesList)
             let image = this.currentNewImage.imageName + ":" + this.currentNewImage.tags
             if(this.selectedImageFilesList == "") {
-                this.$message("未选择任何文件！")
+                this.$message({
+                    message: "未选择任何文件！",
+                    showClose: true,
+                    duration: 8000,
+                })
             } else {
                 // 调用接口删除文件
                 axios({
                     method: 'post',
-                    url: 'api/image/deleteResourcesForBuild?' + "namespace=" + this.userData.companyId + "&image=" + image + "&fileNameList=" + this.selectedImageFilesList,
+                    url: 'api/image/deleteResourcesForBuild?' + "namespace=" + this.userData.namespace + "&image=" + image + "&fileNameList=" + this.selectedImageFilesList,
                     headers: {
                         "Authorization": `${sessionStorage.getItem('userToken')}`
                     },
                 }).then((result) => {
                     console.log(result)
-                    this.$message.success("文件删除成功！")
+                    this.$message({
+                        message: "文件删除成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 调用接口获取该镜像对应的所有文件
                     axios({
                         method: 'get',
-                        url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.companyId + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
+                        url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.namespace + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
                         headers: {
                                 "Authorization": `${sessionStorage.getItem('userToken')}`,
                             },
@@ -933,7 +986,12 @@ export default{
                 console.log(result.data)
                 this.changeMainTo2()
                 loading.close()
-                this.$message.success("镜像创建成功，请等待管理员审批！")
+                this.$message({
+                    message: "镜像创建成功，请等待管理员审批！",
+                    type: "success",
+                    showClose: true,
+                    duration: 8000,
+                })
             }).catch(error => {
                 loading.close()
                 this.handleError(error)
@@ -949,7 +1007,7 @@ export default{
             // 调用接口获取该镜像对应的所有文件
             axios({
               method: 'get',
-              url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.companyId + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
+              url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.namespace + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
               headers: {
                       "Authorization": `${sessionStorage.getItem('userToken')}`,
                   },
@@ -983,16 +1041,36 @@ export default{
             // console.log("对imageName:tag的检测：", regExp.test(imageForVerify))
             // console.log("对连续两个字符的检测：", regExp2.test(imageForVerify))
             if(this.newImage.imageName == "") {
-                this.$message.error("镜像名不能为空！")
+                this.$message({
+                    message: "镜像名不能为空！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(this.newImage.tags == "") {
-                this.$message.error("标签名不能为空！")
+                this.$message({
+                    message: "标签名不能为空！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(!regExp.test(imageForVerify)) {
-                this.$message.error("命名格式不符合要求！")
+                this.$message({
+                    message: "命名格式不符合要求！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(regExp2.test(imageForVerify)) {
-                this.$message.error("命名格式不符合要求！")
+                this.$message({
+                    message: "命名格式不符合要求！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 const image = this.newImage.imageName + ":" + this.newImage.tags
@@ -1011,7 +1089,12 @@ export default{
                 }).then((result) => {
                     console.log(result)
                     loading.close()
-                    this.$message.success("新镜像路径创建成功！")
+                    this.$message({
+                        message: "新镜像路径创建成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 关闭dialog
                     this.writeImageInfoDiaVisible = false
                     this.currentNewImage.imageName = this.newImage.imageName
@@ -1085,7 +1168,7 @@ export default{
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "username": "",
                     "running": "1"
                 }
@@ -1112,7 +1195,7 @@ export default{
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "username": "", 
                     "running": "0",
                 }
@@ -1128,10 +1211,28 @@ export default{
         // 更改用户数据
         changeUserData:function(){
             if(this.editUserDataForm.phone == ''){
-                this.$message.error("电话为空！")
+                this.$message({
+                    message: "手机号为空！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
-            else if (isNaN(Number(this.editUserDataForm.phone))) {
-                this.$message.error("手机号必须为数字！");
+            else if(isNaN(Number(this.editUserDataForm.phone)) || Number(this.editUserDataForm.phone) <= 0) {
+                this.$message({
+                    message: "手机号必须为数字！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
+            }
+            else if(this.editUserDataForm.phone.length != 11) {
+                this.$message({
+                    message: "手机号必须为11位！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 axios({
@@ -1147,7 +1248,12 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.$message.success("个人信息修改成功！")
+                    this.$message({
+                        message: "个人信息修改成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 获取新的用户信息
                     axios({
                         method: 'get',
@@ -1161,7 +1267,7 @@ export default{
                         this.userData.name = result.data.data.name
                         this.userData.phone = result.data.data.phone
                         this.userData.companyName = result.data.data.companyName
-                        this.userData.companyId = result.data.data.CompanyId
+                        this.userData.namespace = result.data.data.CompanyId
                         console.log("companyId:", result.data.data.CompanyId)
                         console.log(this.userData)
                     }).catch(error => {
@@ -1180,19 +1286,44 @@ export default{
         // 更改用户密码
         changeUserPassword:function(){
             if(this.editUserDataForm.password == '') {
-                this.$message.error("请输入新密码！")
+                this.$message({
+                    message: "请输入新密码！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(this.editUserDataForm.passConfirm == '') {
-                this.$message.error("请再次输入新密码！")
+                this.$message({
+                    message: "请再次输入新密码！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(this.editUserDataForm.passConfirm != this.editUserDataForm.password) {
-                this.$message.error("两次输入的密码不一致！")
+                this.$message({
+                    message: "两次输入的密码不一致！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if (this.editUserDataForm.password.length < 8 || this.editUserDataForm.password.length > 18) {
-                this.$message.error("密码长度为8-18位！")
+                this.$message({
+                    message: "密码长度为8-18位！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else if(this.strength != "强") {
-                this.$message.error("密码中要同时包含数字、字母和特殊字符！")
+                this.$message({
+                    message: "密码中要同时包含数字、字母和特殊字符！",
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 // 调用接口更改密码
@@ -1209,7 +1340,12 @@ export default{
                     }
                 }).then((result) => {
                     console.log(result)
-                    this.$message.success("密码修改成功！")
+                    this.$message({
+                        message: "密码修改成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     this.userPasswordChangeDiaVisible = false
                     this.editUserDataForm.password = ''
                 }).catch(error => {
@@ -1257,7 +1393,12 @@ export default{
                 },
             }).then((result) => {
                 console.log(result)
-                this.$message.success("容器实例创建成功！")
+                this.$message({
+                    message: "容器实例创建成功！",
+                    type: "success",
+                    showClose: true,
+                    duration: 8000,
+                })
             }).catch(error => {
                 this.handleError(error)
             });
@@ -1321,7 +1462,11 @@ export default{
         deleteImage:function(){
             console.log(this.selectedImageList)
             if(this.selectedImageList == ""){
-                this.$message("未选择任何镜像！")
+                this.$message({
+                    message: "未选择任何镜像！",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 // 调用delete接口删除
@@ -1334,7 +1479,12 @@ export default{
                     data: this.selectedImageList, 
                 }).then((result) => {
                     console.log(result);
-                    this.$message.success("删除成功！");
+                    this.$message({
+                        message: "删除成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 删除后，显示所有镜像信息
                     this.currentPage = 1;
                     axios({
@@ -1395,7 +1545,11 @@ export default{
         // 打开创建通信Pod的对话框（用户填写pod名称）
         openCreateCommunicatePodDia() {
             if(this.selectedImageList == "") {
-                this.$message("未选择任何镜像！")
+                this.$message({
+                    message: "未选择任何镜像！",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 this.writePodNameDiaVisible = true;
@@ -1416,7 +1570,7 @@ export default{
                 },
                 data: {
                     "username": this.containerSearchForm.username,
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "running": "1"
                 }
             }).then((result) => {
@@ -1439,7 +1593,7 @@ export default{
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "username": "",
                     "running": "1"
                 }
@@ -1459,7 +1613,11 @@ export default{
         deleteContainer:function(){
             console.log("选中的容器实例列表：", this.selectedContainerList)
             if (this.selectedContainerList == '') {
-                this.$message("未选择任何容器实例！")
+                this.$message({
+                    message: "未选择任何容器实例！",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 axios({
@@ -1472,7 +1630,12 @@ export default{
                     data: this.selectedContainerList,
                 }).then((result) => {
                     console.log(result)
-                    this.$message.success("删除成功！")
+                    this.$message({
+                        message: "删除成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     this.selectedContainerList == ''
                     // 显示删除后的所有容器实例数据
                     this.currentPage = 1;
@@ -1484,7 +1647,7 @@ export default{
                             "Authorization": `${sessionStorage.getItem('userToken')}`
                         },
                         data: {
-                            "namespace": this.userData.companyId,
+                            "namespace": this.userData.namespace,
                             "username": "",
                             "running": "1"
                         }
@@ -1511,7 +1674,7 @@ export default{
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "username": this.historyContainerSearchForm.username,
                     "running": "0"
                 },
@@ -1536,7 +1699,7 @@ export default{
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
                 data: {
-                    "namespace": this.userData.companyId,
+                    "namespace": this.userData.namespace,
                     "username": "", 
                     "running": "0",
                 }
@@ -1695,7 +1858,11 @@ export default{
         deleteHistorySoftwareLog() {
             console.log(this.selectedHistorySoftwareLog)
             if(this.selectedHistorySoftwareLog == "") {
-                this.$message("未选择任何日志！")
+                this.$message({
+                    message: "未选择任何日志！",
+                    showClose: true,
+                    duration: 8000,
+                })
             }
             else {
                 // 调用接口删除日志
@@ -1708,7 +1875,12 @@ export default{
                     data: this.selectedHistorySoftwareLog
                 }).then((result) => {
                     console.log(result)
-                    this.$message.success("日志删除成功！")
+                    this.$message({
+                        message: "日志删除成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 调用接口获取删除后的日志列表
                     this.currentPage = 1
                     axios({
@@ -1833,7 +2005,7 @@ export default{
             // 调用接口查看容器log
             axios({
                 method: 'post',
-                url: 'api/container/getConfigFile?' + "namespace=" + this.userData.companyId + "&image=" + this.imageAndTags + "&fileName=" + row.fileName + "&option=1",
+                url: 'api/container/getConfigFile?' + "namespace=" + this.userData.namespace + "&image=" + this.imageAndTags + "&fileName=" + row.fileName + "&option=1",
                 headers: {
                     "Authorization": `${sessionStorage.getItem('userToken')}`
                 },
@@ -1853,7 +2025,7 @@ export default{
         downloadConfigFile(row){
             axios({
                 method: 'post',
-                url: "http://localhost:7000/api/container/getConfigFile?" + "namespace=" + this.userData.companyId + "&image=" + this.imageAndTags + "&fileName=" + row.fileName + "&option=0",
+                url: "http://localhost:7000/api/container/getConfigFile?" + "namespace=" + this.userData.namespace + "&image=" + this.imageAndTags + "&fileName=" + row.fileName + "&option=0",
                 responseType: 'blob',  // 指定响应类型为blob用于文件下载
                 headers: {
                     "Authorization": `${sessionStorage.getItem('userToken')}`
@@ -1921,7 +2093,7 @@ export default{
         //     // 调用接口获取pvc列表
         //     axios({
         //         method: 'get',
-        //         url: 'api/container/getPvc?' + "namespace=" + this.userData.companyId + "&image=" + this.imageAndTags,
+        //         url: 'api/container/getPvc?' + "namespace=" + this.userData.namespace + "&image=" + this.imageAndTags,
         //         headers: {
         //             "Authorization": `${sessionStorage.getItem('userToken')}`
         //         },
@@ -1942,10 +2114,20 @@ export default{
                 const statusCode = error.response.status;
                 const errorMessage = error.response.data.error;
                 // 错误提示
-                this.$message.error(`${statusCode}: ${errorMessage}`);
+                this.$message({
+                    message: `${statusCode}: ${errorMessage}`,
+                    type: "error",
+                    showClose: true,
+                    duration: 8000,
+                })
                 } else {
                     // 其他错误（例如网络问题）
-                    this.$message.error(`${error}`);
+                    this.$message({
+                        message: `${error}`,
+                        type: "error",
+                        showClose: true,
+                        duration: 8000,
+                    })
                 }
         },
 
@@ -1959,7 +2141,7 @@ export default{
                 // 调用接口获取该镜像对应的所有文件
                 axios({
                 method: 'get',
-                url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.companyId + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
+                url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.namespace + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
                 headers: {
                         "Authorization": `${sessionStorage.getItem('userToken')}`,
                     },
@@ -2031,7 +2213,7 @@ export default{
                 // 调用接口 获取所有config文件列表
                 axios({
                     method: 'get',
-                    url: 'api/container/getConfigList?' + 'namespace=' + this.userData.companyId + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                    url: 'api/container/getConfigList?' + 'namespace=' + this.userData.namespace + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
                     headers: {
                             "Authorization": `${sessionStorage.getItem('userToken')}`,
                     },
@@ -2062,7 +2244,7 @@ export default{
                         "Authorization": `${sessionStorage.getItem('userToken')}`
                     },
                     data: {
-                        "namespace": this.userData.companyId,
+                        "namespace": this.userData.namespace,
                         "username": this.containerSearchForm.username,
                         "running": "1"
                     }
@@ -2111,7 +2293,7 @@ export default{
                         "Authorization": `${sessionStorage.getItem('userToken')}`
                     },
                     data: {
-                        "namespace": this.userData.companyId,
+                        "namespace": this.userData.namespace,
                         "username": this.historyContainerSearchForm.username, 
                         "running": "0",
                     }
@@ -2194,7 +2376,12 @@ export default{
                     console.log(result)
                     // 上传成功，关闭加载提示，显示成功消息
                     loading.close();
-                    this.$message.success("配置文件上传成功！")
+                    this.$message({
+                        message: "配置文件上传成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 获取文件选择的input元素并重置其value属性，达到清空文件列表的目的
                     const uploadInput = document.getElementById('uploadConfig');
                     if (uploadInput) {
@@ -2204,7 +2391,7 @@ export default{
                     this.currentPage = 1
                     axios({
                         method: 'get',
-                        url: 'api/container/getConfigList?' + 'namespace=' + this.userData.companyId + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
+                        url: 'api/container/getConfigList?' + 'namespace=' + this.userData.namespace + "&image=" + this.imageAndTags + "&page=" + this.currentPage + "&size=" + this.pageSize,
                         headers: {
                                 "Authorization": `${sessionStorage.getItem('userToken')}`,
                             },
@@ -2263,12 +2450,17 @@ export default{
                     console.log(result)
                     // 上传成功，关闭加载提示，显示成功消息
                     loading.close();
-                    this.$message.success("文件上传成功！")
+                    this.$message({
+                        message: "文件上传成功！",
+                        type: "success",
+                        showClose: true,
+                        duration: 8000,
+                    })
                     // 调用接口获取该镜像对应的所有文件
                     this.currentPage = 1
                     axios({
                         method: 'get',
-                        url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.companyId + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
+                        url: 'api/image/getResourcesForBuild?' + 'namespace=' + this.userData.namespace + '&image=' + image + '&page=' + this.currentPage + '&size=' + this.pageSize,
                         headers: {
                                 "Authorization": `${sessionStorage.getItem('userToken')}`,
                             },
