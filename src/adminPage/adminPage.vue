@@ -2891,7 +2891,7 @@ export default{
         downloadSoftwareLog(row){
             axios({
                 method: 'GET',
-                url: 'http://localhost:7000/api/file/download?' + "image=" + row.image + "&namespace=" + this.tempPodData.namespace + "&fileName=" + row.fileName + "&option=0",
+                url: 'api/file/download?' + "image=" + row.image + "&namespace=" + this.tempPodData.namespace + "&fileName=" + row.fileName + "&option=0",
                 responseType: 'blob',  // 指定响应类型为blob用于文件下载
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
@@ -2934,7 +2934,7 @@ export default{
         downloadContainerLog(){
             axios({
                 method: 'GET',
-                url: "http://localhost:7000/api/container/getPodLog?" + "namespace=" + this.tempPodData.namespace + "&podName=" + this.tempPodData.podName + "&option=0",
+                url: "api/container/getPodLog?" + "namespace=" + this.tempPodData.namespace + "&podName=" + this.tempPodData.podName + "&option=0",
                 responseType: 'blob',  // 指定响应类型为blob用于文件下载
                 headers: {
                     "Authorization": `${sessionStorage.getItem('adminToken')}`
